@@ -20,7 +20,7 @@ class ExtractedFilters(BaseModel):
 
 class UIAction(BaseModel):
     """Real-time UI action for the store frontend to execute."""
-    action: str  # e.g. "SET_FILTERS", "HIGHLIGHT_PRODUCTS", "SYNC_CART", "OPEN_CART_DRAWER", "SYNC_WISHLIST"
+    action: str  # e.g. "SET_FILTERS", "HIGHLIGHT_PRODUCTS", "SYNC_CART", "OPEN_CART_DRAWER", "SYNC_WISHLIST", "AVATAR_GLIDE", "SET_EMOTION"
     payload: Dict[str, Any] = Field(default_factory=dict)
 
 
@@ -39,6 +39,8 @@ class AgentResponseDTO(BaseModel):
     shopper_id: Optional[str] = None
     message: str
     intent: str
+    emotion: str = "HYPED"  # HYPED, CHARMING_COMPLIMENT, ANALYTICAL, CELEBRATING, FIT_ADVISOR, SASSY_DEAL
+    focus_target_id: Optional[str] = None
     ui_actions: List[UIAction] = Field(default_factory=list)
     products: List[Dict[str, Any]] = Field(default_factory=list)
     shopper_profile: Optional[ShopperProfile] = None
@@ -46,13 +48,15 @@ class AgentResponseDTO(BaseModel):
 
 
 class ShopAgentState(BaseModel):
-    """LangGraph Graph State Model."""
+    """LangGraph Graph State Model with Emotional Salesperson Dynamics."""
     session_id: str = "default_session"
     shopper_id: str = "shopper_default"
     shopper_profile: Optional[ShopperProfile] = None
     user_query: str = ""
     messages: List[Dict[str, Any]] = Field(default_factory=list)
     intent: str = "general_chat"
+    emotion: str = "HYPED"
+    focus_target_id: Optional[str] = None
     extracted_filters: ExtractedFilters = Field(default_factory=ExtractedFilters)
     retrieved_products: List[Dict[str, Any]] = Field(default_factory=list)
     ui_actions: List[UIAction] = Field(default_factory=list)

@@ -37,7 +37,7 @@ async def test_product_comparison_routing_and_modal_dispatch():
         result = await shopagent_app.ainvoke(state)
 
         assert result["intent"] == "compare_products"
-        assert "Side-by-Side Comparison" in result["final_response"]
+        assert "Side-by-Side Breakdown" in result["final_response"]
         assert "Zoom Air" in result["final_response"]
         assert "Light BOOST" in result["final_response"]
         
@@ -79,5 +79,5 @@ async def test_fit_advice_heuristic():
         result = await shopagent_app.ainvoke(state)
 
         assert result["intent"] == "compare_products"
-        assert "Fit Advice" in result["final_response"]
-        assert "half a size up" in result["final_response"].lower()
+        assert "Fit Secret" in result["final_response"]
+        assert "half size up" in result["final_response"].lower()

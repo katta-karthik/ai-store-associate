@@ -4,7 +4,7 @@ import React, { useEffect } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { FilterSidebar } from '@/components/FilterSidebar';
 import { ProductGrid } from '@/components/ProductGrid';
-import { ChatWidget } from '@/components/ChatWidget';
+import { SalesAssociateCompanion } from '@/components/SalesAssociateCompanion';
 import { CartDrawer } from '@/components/CartDrawer';
 import { WishlistDrawer } from '@/components/WishlistDrawer';
 import { ComparisonModal } from '@/components/ComparisonModal';
@@ -13,13 +13,14 @@ import { useStore } from '@/store/useStore';
 import { Sparkles, ShieldCheck, Zap, RefreshCw } from 'lucide-react';
 
 export default function StorefrontPage() {
-  const { fetchProducts, fetchCart, fetchWishlist } = useStore();
+  const { fetchProducts, fetchCart, fetchWishlist, initializeSession } = useStore();
 
   useEffect(() => {
+    initializeSession();
     fetchProducts();
     fetchCart();
     fetchWishlist();
-  }, [fetchProducts, fetchCart, fetchWishlist]);
+  }, [initializeSession, fetchProducts, fetchCart, fetchWishlist]);
 
   return (
     <div className="min-h-screen flex flex-col bg-[#09090b]">
@@ -32,17 +33,17 @@ export default function StorefrontPage() {
           <div className="space-y-4 max-w-2xl text-center lg:text-left">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-semibold">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Next-Gen E-Commerce Associate Live</span>
+              <span>Personal Walkalong Sales Associate Live</span>
             </div>
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white leading-tight">
-              Shopping with an{' '}
+              Your Personal{' '}
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-pink-400 to-purple-400">
-                AI Store Associate
+                AI Store Sales Boy
               </span>
             </h1>
             <p className="text-zinc-400 text-sm sm:text-base leading-relaxed">
-              Experience conversational shopping. Speak naturally and watch your store filters,
-              side-by-side product comparisons, deep research fit scores, and cart adapt in real time.
+              Experience true physical-store retail warmth. Your personal sales associate walks with you
+              across the store, giving flattering compliments, live sizing advice, and closing deals without ever blocking your screen.
             </p>
           </div>
 
@@ -53,8 +54,8 @@ export default function StorefrontPage() {
                 <Zap className="w-5 h-5" />
               </div>
               <div>
-                <span className="block font-bold text-white text-sm">Real-Time</span>
-                <span className="text-[11px] text-zinc-400">SSE Filter & Cart Sync</span>
+                <span className="block font-bold text-white text-sm">Spatial</span>
+                <span className="text-[11px] text-zinc-400">Walkalong Companion</span>
               </div>
             </div>
 
@@ -63,8 +64,8 @@ export default function StorefrontPage() {
                 <RefreshCw className="w-5 h-5" />
               </div>
               <div>
-                <span className="block font-bold text-white text-sm">Universal</span>
-                <span className="text-[11px] text-zinc-400">Store SDK</span>
+                <span className="block font-bold text-white text-sm">Sweet Pitch</span>
+                <span className="text-[11px] text-zinc-400">Hero Compliments</span>
               </div>
             </div>
 
@@ -73,8 +74,8 @@ export default function StorefrontPage() {
                 <ShieldCheck className="w-5 h-5" />
               </div>
               <div>
-                <span className="block font-bold text-white text-sm">0-Crash</span>
-                <span className="text-[11px] text-zinc-400">SRE Guardrails</span>
+                <span className="block font-bold text-white text-sm">0-Block</span>
+                <span className="text-[11px] text-zinc-400">Non-Intrusive UI</span>
               </div>
             </div>
           </div>
@@ -91,8 +92,8 @@ export default function StorefrontPage() {
           <div className="flex-1 space-y-6">
             <div className="flex items-center justify-between border-b border-surface-border pb-4">
               <div>
-                <h2 className="text-xl font-bold text-white tracking-tight">Curated Footwear Catalog</h2>
-                <p className="text-xs text-zinc-400">Real-time stock from Universal Commerce API</p>
+                <h2 className="text-xl font-bold text-white tracking-tight">Curated Footwear Collection</h2>
+                <p className="text-xs text-zinc-400">Hover over any pair to get an instant recommendation from your associate</p>
               </div>
             </div>
 
@@ -107,8 +108,8 @@ export default function StorefrontPage() {
       <ComparisonModal />
       <ResearchReportDrawer />
 
-      {/* Floating AI Store Associate Chat Widget */}
-      <ChatWidget />
+      {/* The Floating Spatial Walkalong Sales Associate Companion */}
+      <SalesAssociateCompanion />
     </div>
   );
 }

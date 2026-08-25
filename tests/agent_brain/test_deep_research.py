@@ -38,8 +38,7 @@ async def test_deep_research_multi_constraint_routing_and_scoring():
         result = await shopagent_app.ainvoke(state)
 
         assert result["intent"] == "deep_research"
-        assert "Deep Shopping Research" in result["final_response"]
-        assert "Top Recommendation" in result["final_response"]
+        assert "Hero Match" in result["final_response"]
         assert "Match" in result["final_response"]
 
         # Verify SHOW_RESEARCH_REPORT UI Action was dispatched

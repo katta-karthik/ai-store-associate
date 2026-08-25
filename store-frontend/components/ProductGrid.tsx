@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Star, ShoppingBag, Check, Sparkles, AlertCircle } from 'lucide-react';
+import { Star, ShoppingBag, Check, Sparkles, AlertCircle, MessageCircle } from 'lucide-react';
 import { useStore, Product } from '@/store/useStore';
 
 export const ProductGrid: React.FC = () => {
@@ -57,13 +57,15 @@ export const ProductGrid: React.FC = () => {
       {products.map((product) => {
         const isHighlighted = highlightedProductIds.includes(product.id);
         const selectedVariantId = selectedVariants[product.id] || product.variants[0]?.id;
-        const selectedVariant = product.variants.find((v) => v.id === selectedVariantId);
         const isAdded = addedIds[product.id];
 
         return (
           <div
             key={product.id}
-            className={`glass-panel rounded-2xl p-4 flex flex-col justify-between transition-all duration-300 relative group hover:border-zinc-500 ${
+            id={product.id}
+            data-product-id={product.id}
+            data-product-title={product.title}
+            className={`glass-panel rounded-2xl p-4 flex flex-col justify-between transition-all duration-300 relative group hover:border-indigo-500/50 hover:shadow-xl hover:shadow-indigo-500/10 ${
               isHighlighted ? 'agent-highlight' : 'border-surface-border'
             }`}
           >
@@ -71,7 +73,7 @@ export const ProductGrid: React.FC = () => {
             {isHighlighted && (
               <div className="absolute -top-3 right-4 px-3 py-1 rounded-full bg-gradient-to-r from-pink-500 to-indigo-500 text-white text-[11px] font-bold flex items-center gap-1 shadow-lg shadow-pink-500/30 animate-pulse">
                 <Sparkles className="w-3 h-3" />
-                <span>AI Recommended</span>
+                <span>Sales Boy's Pick</span>
               </div>
             )}
 
@@ -109,7 +111,7 @@ export const ProductGrid: React.FC = () => {
 
               {/* Sizes Selection */}
               <div className="mt-3 space-y-1.5">
-                <span className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">Select Size</span>
+                <span className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">Select UK Size:</span>
                 <div className="flex flex-wrap gap-1.5">
                   {product.variants.map((v) => (
                     <button
@@ -124,7 +126,7 @@ export const ProductGrid: React.FC = () => {
                           : 'bg-zinc-800/80 text-zinc-300 hover:bg-zinc-700 border border-zinc-700/50'
                       }`}
                     >
-                      {v.size}
+                      UK {v.size}
                     </button>
                   ))}
                 </div>
@@ -151,12 +153,12 @@ export const ProductGrid: React.FC = () => {
                 {isAdded ? (
                   <>
                     <Check className="w-4 h-4" />
-                    <span>Added</span>
+                    <span>In Your Bag!</span>
                   </>
                 ) : (
                   <>
                     <ShoppingBag className="w-4 h-4" />
-                    <span>Add to Cart</span>
+                    <span>Add to Bag</span>
                   </>
                 )}
               </button>
