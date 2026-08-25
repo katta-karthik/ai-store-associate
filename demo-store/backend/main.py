@@ -16,6 +16,7 @@ from fastapi.responses import JSONResponse
 
 from store_app.api.cart import router as cart_router
 from store_app.api.products import router as products_router
+from store_app.api.wishlist import router as wishlist_router
 from store_app.core.config import settings
 from store_app.core.database import AsyncSessionLocal, Base, engine
 from store_app.seed.seed_data import seed_database
@@ -87,6 +88,7 @@ async def readiness_probe() -> JSONResponse:
 # Mount API Routers
 app.include_router(products_router, prefix=settings.API_V1_PREFIX)
 app.include_router(cart_router, prefix=settings.API_V1_PREFIX)
+app.include_router(wishlist_router, prefix=settings.API_V1_PREFIX)
 
 
 if __name__ == "__main__":

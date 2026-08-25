@@ -38,6 +38,17 @@ export interface CartItem {
   image?: string;
 }
 
+export interface WishlistItem {
+  item_id: string;
+  product_id: string;
+  variant_id?: string;
+  title: string;
+  brand: string;
+  price: number;
+  size?: string;
+  image?: string;
+}
+
 export interface ChatMessage {
   id: string;
   role: 'user' | 'assistant';
@@ -65,18 +76,32 @@ interface StoreState {
     item_count: number;
     subtotal: number;
   };
+  wishlist: {
+    wishlist_id: string;
+    items: WishlistItem[];
+    item_count: number;
+  };
   chatMessages: ChatMessage[];
   isChatOpen: boolean;
+  isCartOpen: boolean;
+  isWishlistOpen: boolean;
   isStreaming: boolean;
 
   // Actions
   setFilters: (newFilters: Partial<StoreFilters>) => void;
   setHighlightedProducts: (ids: string[]) => void;
   fetchProducts: () => Promise<void>;
+  fetchCart: () => Promise<void>;
   addToCart: (productId: string, variantId: string) => Promise<void>;
+  removeFromCart: (itemId: string) => Promise<void>;
+  fetchWishlist: () => Promise<void>;
+  addToWishlist: (productId: string, variantId?: string) => Promise<void>;
+  removeFromWishlist: (itemId: string) => Promise<void>;
   addChatMessage: (message: Omit<ChatMessage, 'id' | 'timestamp'>) => void;
   updateLastAssistantMessage: (token: string) => void;
   toggleChat: () => void;
+  toggleCart: () => void;
+  toggleWishlist: () => void;
   setIsStreaming: (status: boolean) => void;
 }
 
@@ -94,20 +119,27 @@ export const useStore = create<StoreState>((set, get) => ({
   },
   highlightedProductIds: [],
   cart: {
-    cart_id: 'cart_session_default',
+    cart_id: 'cart_shopper_session_001',
     items: [],
     item_count: 0,
     subtotal: 0,
+  },
+  wishlist: {
+    wishlist_id: 'wishlist_shopper_session_001',
+    items: [],
+    item_count: 0,
   },
   chatMessages: [
     {
       id: 'welcome_msg',
       role: 'assistant',
-      content: "👋 Hi! I'm your **ShopAgent AI Associate**. Ask me anything like *'I need road running shoes under ₹8k'* or *'Show me waterproof trail shoes'* and I'll adjust the store for you!",
+      content: "👋 Hi! I'm your **ShopAgent AI Associate**. Ask me anything like *'I need road running shoes under ₹8k'* or *'Add Nike Pegasus in size 10 to my cart'*, and I'll take care of it for you!",
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     }
   ],
   isChatOpen: true,
+  isCartOpen: false,
+  isWishlistOpen: false,
   isStreaming: false,
 
   setFilters: (newFilters) => {
@@ -146,6 +178,19 @@ export const useStore = create<StoreState>((set, get) => ({
     }
   },
 
+  fetchCart: async () => {
+    const { cart } = get();
+    try {
+      const res = await fetch(`${STORE_API_URL}/cart/${cart.cart_id}`);
+      if (res.ok) {
+        const json = await res.json();
+        if (json.data) set({ cart: json.data });
+      }
+    } catch (e) {
+      console.error('Error fetching cart:', e);
+    }
+  },
+
   addToCart: async (productId: string, variantId: string) => {
     const { cart } = get();
     try {
@@ -156,10 +201,70 @@ export const useStore = create<StoreState>((set, get) => ({
       });
       if (res.ok) {
         const json = await res.json();
-        set({ cart: json.data });
+        if (json.data) set({ cart: json.data });
       }
     } catch (e) {
       console.error('Error adding to cart:', e);
+    }
+  },
+
+  removeFromCart: async (itemId: string) => {
+    const { cart } = get();
+    try {
+      const res = await fetch(`${STORE_API_URL}/cart/${cart.cart_id}/items/${itemId}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.data) set({ cart: json.data });
+      }
+    } catch (e) {
+      console.error('Error removing from cart:', e);
+    }
+  },
+
+  fetchWishlist: async () => {
+    const { wishlist } = get();
+    try {
+      const res = await fetch(`${STORE_API_URL}/wishlist/${wishlist.wishlist_id}`);
+      if (res.ok) {
+        const json = await res.json();
+        if (json.data) set({ wishlist: json.data });
+      }
+    } catch (e) {
+      console.error('Error fetching wishlist:', e);
+    }
+  },
+
+  addToWishlist: async (productId: string, variantId?: string) => {
+    const { wishlist } = get();
+    try {
+      const res = await fetch(`${STORE_API_URL}/wishlist/${wishlist.wishlist_id}/items`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ product_id: productId, variant_id: variantId }),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.data) set({ wishlist: json.data });
+      }
+    } catch (e) {
+      console.error('Error adding to wishlist:', e);
+    }
+  },
+
+  removeFromWishlist: async (itemId: string) => {
+    const { wishlist } = get();
+    try {
+      const res = await fetch(`${STORE_API_URL}/wishlist/${wishlist.wishlist_id}/items/${itemId}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.data) set({ wishlist: json.data });
+      }
+    } catch (e) {
+      console.error('Error removing from wishlist:', e);
     }
   },
 
@@ -190,6 +295,14 @@ export const useStore = create<StoreState>((set, get) => ({
 
   toggleChat: () => {
     set((state) => ({ isChatOpen: !state.isChatOpen }));
+  },
+
+  toggleCart: () => {
+    set((state) => ({ isCartOpen: !state.isCartOpen }));
+  },
+
+  toggleWishlist: () => {
+    set((state) => ({ isWishlistOpen: !state.isWishlistOpen }));
   },
 
   setIsStreaming: (status) => {

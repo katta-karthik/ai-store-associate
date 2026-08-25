@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Sparkles, Send, X, Bot, User, CornerDownLeft, Loader2, ArrowRight } from 'lucide-react';
+import { Sparkles, Send, X, Bot, User, Loader2 } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 
 const AGENT_API_URL = process.env.NEXT_PUBLIC_AGENT_API_URL || 'http://localhost:8001/api/v1';
@@ -10,11 +10,15 @@ export const ChatWidget: React.FC = () => {
   const {
     isChatOpen,
     toggleChat,
+    toggleCart,
+    toggleWishlist,
     chatMessages,
     addChatMessage,
     updateLastAssistantMessage,
     setFilters,
     setHighlightedProducts,
+    fetchCart,
+    fetchWishlist,
     isStreaming,
     setIsStreaming,
   } = useStore();
@@ -32,9 +36,9 @@ export const ChatWidget: React.FC = () => {
 
   const quickPrompts = [
     '👟 Road running shoes under ₹8k',
-    '🌲 Waterproof trail running shoes',
-    '✨ Panda retro sneakers',
-    '⚡ Lightweight Nike shoes in size 10',
+    '🛒 Add Nike Pegasus size 10 to cart',
+    '💖 Save Salomon Speedcross to wishlist',
+    '📦 Show what is in my cart',
   ];
 
   const handleSendMessage = async (textToSend?: string) => {
@@ -95,6 +99,16 @@ export const ChatWidget: React.FC = () => {
                 setFilters(newFilters);
               } else if (actionObj.action === 'HIGHLIGHT_PRODUCTS') {
                 setHighlightedProducts(actionObj.payload.product_ids || []);
+              } else if (actionObj.action === 'SYNC_CART') {
+                fetchCart();
+              } else if (actionObj.action === 'OPEN_CART_DRAWER') {
+                fetchCart();
+                useStore.setState({ isCartOpen: true });
+              } else if (actionObj.action === 'SYNC_WISHLIST') {
+                fetchWishlist();
+              } else if (actionObj.action === 'OPEN_WISHLIST_DRAWER') {
+                fetchWishlist();
+                useStore.setState({ isWishlistOpen: true });
               }
             } catch (err) {
               console.error('Error parsing UI action:', err);
@@ -132,7 +146,7 @@ export const ChatWidget: React.FC = () => {
               <h3 className="font-bold text-sm text-white">AI Store Associate</h3>
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             </div>
-            <p className="text-[11px] text-zinc-400">Controls store filters & compares live</p>
+            <p className="text-[11px] text-zinc-400">Controls filters, compares & adds to cart live</p>
           </div>
         </div>
         <button
@@ -167,17 +181,18 @@ export const ChatWidget: React.FC = () => {
             >
               {msg.content ? (
                 <div
-                  className="prose prose-invert prose-xs max-w-none"
+                  className="prose prose-invert prose-xs max-w-none space-y-1.5"
                   dangerouslySetInnerHTML={{
                     __html: msg.content
                       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                      .replace(/\*(.*?)\*/g, '<em>$1</em>'),
+                      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                      .replace(/\n/g, '<br/>'),
                   }}
                 />
               ) : (
                 <div className="flex items-center gap-1.5 py-1 text-zinc-400">
                   <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
-                  <span>Searching catalog & adjusting filters...</span>
+                  <span>Processing shopping action...</span>
                 </div>
               )}
               <span className="block text-[9px] text-zinc-500 text-right mt-1.5">{msg.timestamp}</span>
@@ -218,7 +233,7 @@ export const ChatWidget: React.FC = () => {
         >
           <input
             type="text"
-            placeholder="Tell me what you're shopping for..."
+            placeholder="Ask to filter, add size 10 to cart, save to wishlist..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
             disabled={isStreaming}

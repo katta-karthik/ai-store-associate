@@ -1,11 +1,11 @@
 'use client';
 
 import React from 'react';
-import { ShoppingBag, Sparkles, Search, SlidersHorizontal, MessageSquare } from 'lucide-react';
+import { ShoppingBag, Sparkles, Search, Heart } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 
 export const Navbar: React.FC = () => {
-  const { cart, filters, setFilters, toggleChat, isChatOpen } = useStore();
+  const { cart, wishlist, filters, setFilters, toggleChat, toggleCart, toggleWishlist, isChatOpen } = useStore();
 
   return (
     <header className="sticky top-0 z-40 w-full glass-panel border-b border-surface-border">
@@ -39,8 +39,8 @@ export const Navbar: React.FC = () => {
           </div>
         </div>
 
-        {/* Cart & AI Chat Drawer Buttons */}
-        <div className="flex items-center gap-3">
+        {/* Action Buttons: AI Associate, Wishlist, Cart */}
+        <div className="flex items-center gap-2.5">
           <button
             onClick={toggleChat}
             className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-medium transition-all ${
@@ -53,8 +53,25 @@ export const Navbar: React.FC = () => {
             <span className="hidden sm:inline">AI Associate</span>
           </button>
 
-          <button className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-surface hover:bg-surface-card border border-surface-border transition-all">
-            <ShoppingBag className="w-5 h-5 text-zinc-200" />
+          {/* Wishlist Button */}
+          <button
+            onClick={toggleWishlist}
+            className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-surface hover:bg-surface-card border border-surface-border transition-all"
+          >
+            <Heart className="w-4 h-4 text-zinc-200" />
+            {wishlist.item_count > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-pink-500 text-white text-xs font-bold flex items-center justify-center shadow-lg shadow-accent-glow">
+                {wishlist.item_count}
+              </span>
+            )}
+          </button>
+
+          {/* Cart Button */}
+          <button
+            onClick={toggleCart}
+            className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-surface hover:bg-surface-card border border-surface-border transition-all"
+          >
+            <ShoppingBag className="w-4 h-4 text-zinc-200" />
             {cart.item_count > 0 && (
               <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-accent text-white text-xs font-bold flex items-center justify-center shadow-lg shadow-accent-glow animate-bounce">
                 {cart.item_count}

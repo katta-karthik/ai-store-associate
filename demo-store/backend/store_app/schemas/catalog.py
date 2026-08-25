@@ -1,4 +1,4 @@
-"""Pydantic V2 Schemas for Catalog & Cart API."""
+"""Pydantic V2 Schemas for Catalog, Cart & Wishlist API."""
 
 from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, ConfigDict, Field
@@ -80,6 +80,31 @@ class CartSchema(BaseModel):
     items: List[CartItemSchema] = Field(default_factory=list)
     subtotal: float = 0.0
     currency: str = "INR"
+    item_count: int = 0
+
+
+class WishlistItemCreateSchema(BaseModel):
+    """Schema to add item to wishlist."""
+    product_id: str
+    variant_id: Optional[str] = None
+
+
+class WishlistItemSchema(BaseModel):
+    """Schema for item in wishlist response."""
+    item_id: str
+    product_id: str
+    variant_id: Optional[str] = None
+    title: str
+    brand: str
+    price: float
+    size: Optional[str] = None
+    image: Optional[str] = None
+
+
+class WishlistSchema(BaseModel):
+    """Schema for wishlist envelope response."""
+    wishlist_id: str
+    items: List[WishlistItemSchema] = Field(default_factory=list)
     item_count: int = 0
 
 

@@ -60,6 +60,25 @@ class CartDTO(BaseModel):
     item_count: int = 0
 
 
+class WishlistItemDTO(BaseModel):
+    """Data transfer object for a wishlist item."""
+    item_id: str
+    product_id: str
+    variant_id: Optional[str] = None
+    title: str
+    brand: str
+    price: float
+    size: Optional[str] = None
+    image: Optional[str] = None
+
+
+class WishlistDTO(BaseModel):
+    """Data transfer object for the wishlist."""
+    wishlist_id: str
+    items: List[WishlistItemDTO] = Field(default_factory=list)
+    item_count: int = 0
+
+
 class ProductSearchParams(BaseModel):
     """Standardized search and filter parameters."""
     query: Optional[str] = None
@@ -108,6 +127,23 @@ class UniversalStoreAdapter(ABC):
     @abstractmethod
     async def remove_from_cart(self, cart_id: str, item_id: str) -> CartDTO:
         """Remove a line item from the active cart."""
+        pass
+
+    @abstractmethod
+    async def get_wishlist(self, wishlist_id: str) -> WishlistDTO:
+        """Retrieve the active shopper wishlist."""
+        pass
+
+    @abstractmethod
+    async def add_to_wishlist(
+        self, wishlist_id: str, product_id: str, variant_id: Optional[str] = None
+    ) -> WishlistDTO:
+        """Add a product or variant to the wishlist."""
+        pass
+
+    @abstractmethod
+    async def remove_from_wishlist(self, wishlist_id: str, item_id: str) -> WishlistDTO:
+        """Remove an item from the active wishlist."""
         pass
 
     @abstractmethod

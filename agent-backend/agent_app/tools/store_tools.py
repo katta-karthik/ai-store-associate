@@ -49,5 +49,72 @@ class StoreAPIClient:
         except Exception:
             return None
 
+    # Cart Tools
+    async def get_cart(self, cart_id: str) -> Dict[str, Any]:
+        """Fetch active cart."""
+        try:
+            async with httpx.AsyncClient(timeout=5.0) as client:
+                resp = await client.get(f"{self.base_url}/cart/{cart_id}")
+                if resp.status_code == 200:
+                    return resp.json().get("data", {})
+                return {"cart_id": cart_id, "items": [], "item_count": 0, "subtotal": 0.0}
+        except Exception as e:
+            return {"cart_id": cart_id, "items": [], "item_count": 0, "subtotal": 0.0, "error": str(e)}
+
+    async def add_to_cart(
+        self, cart_id: str, product_id: str, variant_id: str, quantity: int = 1
+    ) -> Dict[str, Any]:
+        """Add item to cart."""
+        try:
+            async with httpx.AsyncClient(timeout=5.0) as client:
+                resp = await client.post(
+                    f"{self.base_url}/cart/{cart_id}/items",
+                    json={"product_id": product_id, "variant_id": variant_id, "quantity": quantity},
+                )
+                if resp.status_code == 200:
+                    return resp.json().get("data", {})
+                return {"error": resp.text}
+        except Exception as e:
+            return {"error": str(e)}
+
+    async def remove_from_cart(self, cart_id: str, item_id: str) -> Dict[str, Any]:
+        """Remove item from cart."""
+        try:
+            async with httpx.AsyncClient(timeout=5.0) as client:
+                resp = await client.delete(f"{self.base_url}/cart/{cart_id}/items/{item_id}")
+                if resp.status_code == 200:
+                    return resp.json().get("data", {})
+                return {"error": resp.text}
+        except Exception as e:
+            return {"error": str(e)}
+
+    # Wishlist Tools
+    async def get_wishlist(self, wishlist_id: str) -> Dict[str, Any]:
+        """Fetch active wishlist."""
+        try:
+            async with httpx.AsyncClient(timeout=5.0) as client:
+                resp = await client.get(f"{self.base_url}/wishlist/{wishlist_id}")
+                if resp.status_code == 200:
+                    return resp.json().get("data", {})
+                return {"wishlist_id": wishlist_id, "items": [], "item_count": 0}
+        except Exception as e:
+            return {"wishlist_id": wishlist_id, "items": [], "item_count": 0, "error": str(e)}
+
+    async def add_to_wishlist(
+        self, wishlist_id: str, product_id: str, variant_id: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """Add item to wishlist."""
+        try:
+            async with httpx.AsyncClient(timeout=5.0) as client:
+                resp = await client.post(
+                    f"{self.base_url}/wishlist/{wishlist_id}/items",
+                    json={"product_id": product_id, "variant_id": variant_id},
+                )
+                if resp.status_code == 200:
+                    return resp.json().get("data", {})
+                return {"error": resp.text}
+        except Exception as e:
+            return {"error": str(e)}
+
 
 store_client = StoreAPIClient()

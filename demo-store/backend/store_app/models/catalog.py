@@ -1,4 +1,4 @@
-"""SQLAlchemy Database Models for E-Commerce Catalog & Cart."""
+"""SQLAlchemy Database Models for E-Commerce Catalog, Cart & Wishlist."""
 
 import datetime
 from sqlalchemy import (
@@ -90,5 +90,31 @@ class CartItem(Base):
     created_at = Column(DateTime, default=utc_now)
 
     cart = relationship("Cart", back_populates="items")
+    product = relationship("Product", lazy="selectin")
+    variant = relationship("ProductVariant", lazy="selectin")
+
+
+class Wishlist(Base):
+    """Shopper Wishlist / Saved-For-Later Session Model."""
+    __tablename__ = "wishlists"
+
+    id = Column(String(100), primary_key=True, index=True)
+    created_at = Column(DateTime, default=utc_now)
+    updated_at = Column(DateTime, default=utc_now, onupdate=utc_now)
+
+    items = relationship("WishlistItem", back_populates="wishlist", cascade="all, delete-orphan", lazy="selectin")
+
+
+class WishlistItem(Base):
+    """Wishlist Item Model."""
+    __tablename__ = "wishlist_items"
+
+    id = Column(String(100), primary_key=True, index=True)
+    wishlist_id = Column(String(100), ForeignKey("wishlists.id"), nullable=False)
+    product_id = Column(String(50), ForeignKey("products.id"), nullable=False)
+    variant_id = Column(String(50), ForeignKey("product_variants.id"), nullable=True)
+    created_at = Column(DateTime, default=utc_now)
+
+    wishlist = relationship("Wishlist", back_populates="items")
     product = relationship("Product", lazy="selectin")
     variant = relationship("ProductVariant", lazy="selectin")

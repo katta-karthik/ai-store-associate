@@ -5,15 +5,19 @@ import { Navbar } from '@/components/Navbar';
 import { FilterSidebar } from '@/components/FilterSidebar';
 import { ProductGrid } from '@/components/ProductGrid';
 import { ChatWidget } from '@/components/ChatWidget';
+import { CartDrawer } from '@/components/CartDrawer';
+import { WishlistDrawer } from '@/components/WishlistDrawer';
 import { useStore } from '@/store/useStore';
-import { Sparkles, ArrowRight, ShieldCheck, Zap, RefreshCw } from 'lucide-react';
+import { Sparkles, ShieldCheck, Zap, RefreshCw } from 'lucide-react';
 
 export default function StorefrontPage() {
-  const { fetchProducts } = useStore();
+  const { fetchProducts, fetchCart, fetchWishlist } = useStore();
 
   useEffect(() => {
     fetchProducts();
-  }, [fetchProducts]);
+    fetchCart();
+    fetchWishlist();
+  }, [fetchProducts, fetchCart, fetchWishlist]);
 
   return (
     <div className="min-h-screen flex flex-col bg-[#09090b]">
@@ -36,7 +40,7 @@ export default function StorefrontPage() {
             </h1>
             <p className="text-zinc-400 text-sm sm:text-base leading-relaxed">
               Experience conversational shopping. Speak naturally and watch your store filters,
-              product comparisons, and recommendations adapt in real time.
+              product comparisons, wishlist, and cart adapt in real time.
             </p>
           </div>
 
@@ -48,7 +52,7 @@ export default function StorefrontPage() {
               </div>
               <div>
                 <span className="block font-bold text-white text-sm">Real-Time</span>
-                <span className="text-[11px] text-zinc-400">SSE Filter Sync</span>
+                <span className="text-[11px] text-zinc-400">SSE Filter & Cart Sync</span>
               </div>
             </div>
 
@@ -94,6 +98,10 @@ export default function StorefrontPage() {
           </div>
         </div>
       </main>
+
+      {/* Slide-out Drawers */}
+      <CartDrawer />
+      <WishlistDrawer />
 
       {/* Floating AI Store Associate Chat Widget */}
       <ChatWidget />
