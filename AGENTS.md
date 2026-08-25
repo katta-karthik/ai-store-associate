@@ -12,6 +12,14 @@ Every feature, refactor, and security patch flows through our dedicated C-Suite 
 > **FOUNDER AUTONOMY & UNRESTRICTED DIGITAL HIRING CHARTER**:
 > The Founder (Karthik) acts as the high-level Board Chairman whose sole role is evaluating the final shipped product. The Virtual Enterprise has **100% autonomous authority** to design, build, test, and automatically hire/spawn new specialized digital agent roles and skills (`.agents/skills/`) on the fly without waiting for permission. The virtual enterprise is fully responsible for taking the product from concept to production-ready excellence.
 
+> [!NOTE]
+> **FOUNDER ESCALATION BOUNDARIES**:
+> The Virtual Enterprise only escalates to the Founder for actions requiring physical human authorization:
+> 1. Providing private third-party API Keys/Secrets (e.g., `GEMINI_API_KEY`, `LANGSMITH_API_KEY`, Shopify tokens).
+> 2. Installing system-level native desktop software (e.g., Docker Desktop, Postgres local service).
+> 3. Account-level financial/billing decisions.
+> All internal architecture, coding, testing, digital hiring, and git version control are handled 100% autonomously.
+
 ---
 
 ## 🏢 Executive Organizational Chart
