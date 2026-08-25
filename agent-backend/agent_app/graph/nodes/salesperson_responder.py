@@ -49,18 +49,28 @@ def salesperson_responder_node(state: ShopAgentState) -> Dict[str, Any]:
             prod_ids = [p["id"] for p in products[:3]]
             ui_actions.append(UIAction(action="HIGHLIGHT_PRODUCTS", payload={"product_ids": prod_ids}))
 
+            # Fit note for snug athletic models
+            fit_tip = ""
+            has_salomon = any("salomon" in p["brand"].lower() for p in products)
+            if has_salomon and profile and profile.preferred_size:
+                try:
+                    up_size = float(profile.preferred_size) + 0.5
+                    fit_tip = f"\n\n💡 **Fit Tip**: Since your profile size is UK {profile.preferred_size}, we recommend sizing up to **UK {up_size:g}** for Salomon footwear."
+                except ValueError:
+                    fit_tip = f"\n\n💡 **Fit Tip**: Salomon shoes run snug; we recommend half a size up from your normal UK {profile.preferred_size}."
+
             # Formulate salesperson consultation text
             if len(products) == 1:
                 p = products[0]
                 response_text = (
                     f"{personalization_prefix}I found the **{p['title']}** ({p['brand']}) for ₹{p['base_price']:,.0f}. "
-                    f"{p['description']}"
+                    f"{p['description']}{fit_tip}"
                 )
             else:
                 top_items = ", ".join([f"**{p['title']}** (₹{p['base_price']:,.0f})" for p in products[:3]])
                 response_text = (
                     f"{personalization_prefix}I've updated your store filters and found **{len(products)} matching options** for you: {top_items}. "
-                    f"Let me know if you want me to compare their cushioning or specs!"
+                    f"Let me know if you want me to compare their cushioning or specs!{fit_tip}"
                 )
 
     elif state.intent == "cart_action":

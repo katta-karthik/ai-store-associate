@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.0] - 2026-08-25
+
+### Added - v1.1.0 Enhancements: Voice Shopping, Size Selectors, Session Isolation & Shopify Adapter
+- **Web Speech API Voice Shopping**: Added hands-free speech recognition microphone button in `store-frontend/components/ChatWidget.tsx` with live listening state.
+- **Interactive UK Size Selector Pills**: Built size pill pickers into `ComparisonModal.tsx` and `ResearchReportDrawer.tsx` allowing shoppers to select their exact shoe size before adding to bag.
+- **Dynamic Browser `localStorage` Session Isolation**: Replaced hardcoded session IDs with automatic UUID generation in `useStore.ts` for multi-tab and multi-device shopper isolation.
+- **Tailored Sizing Feedback Loops**: Enhanced `salesperson_responder_node` to cross-reference shoe fit profiles against the shopper's stored preferred size.
+- **Shopify Storefront GraphQL Adapter**: Implemented `ShopifyStoreAdapter` in `sdk/store-sdk/shopify_adapter.py` for turnkey Shopify merchant catalog and cart integration.
+- **Full Automated QA Coverage**: 25 automated tests passing across SDK, Demo Store, and Agent Brain.
+
+---
+
 ## [1.0.0] - 2026-08-25
 
 ### Added - Milestone 7: Deep Shopping Research Agent & General Availability Release
@@ -15,7 +27,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Deep Research UI Drawer**: Built `store-frontend/components/ResearchReportDrawer.tsx` displaying match percentage badges, biomechanical fit tags, pros list, and one-click recommendation selection.
 - **Dynamic UI Actions**: Emitted `SHOW_RESEARCH_REPORT` via real-time SSE stream.
 - **Full System QA Verification**: 24 automated tests passing across the entire repository.
-- **Production Build Validated**: Next.js 15 App Router production bundle compiled with 0 TypeScript/lint errors.
 
 ---
 

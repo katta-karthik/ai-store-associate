@@ -1,16 +1,19 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Sparkles, X, Check, AlertCircle, ShoppingBag, ShieldCheck, Award } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 
 export const ResearchReportDrawer: React.FC = () => {
   const { isResearchReportOpen, toggleResearchReport, researchReport, addToCart } = useStore();
+  const [selectedSize, setSelectedSize] = useState<string>('10');
 
   if (!isResearchReportOpen || !researchReport) return null;
 
   const top = researchReport.top_product;
   const runner = researchReport.runner_up;
+
+  const availableSizes = ['8', '8.5', '9', '9.5', '10', '10.5', '11'];
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden">
@@ -98,6 +101,26 @@ export const ResearchReportDrawer: React.FC = () => {
                     ))}
                   </div>
                 )}
+
+                {/* Size Selector */}
+                <div className="pt-2 border-t border-indigo-500/20 space-y-1.5">
+                  <span className="text-[10px] font-semibold text-zinc-300 uppercase">Choose Your Size (UK):</span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {availableSizes.map((s) => (
+                      <button
+                        key={s}
+                        onClick={() => setSelectedSize(s)}
+                        className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
+                          selectedSize === s
+                            ? 'bg-primary text-white shadow-sm shadow-primary-glow border border-primary'
+                            : 'bg-zinc-800 text-zinc-300 border border-zinc-700 hover:border-zinc-500'
+                        }`}
+                      >
+                        UK {s}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
             )}
 
@@ -136,13 +159,13 @@ export const ResearchReportDrawer: React.FC = () => {
             <div className="p-5 border-t border-surface-border bg-surface/90">
               <button
                 onClick={() => {
-                  addToCart(top.product_id, 'var_default');
+                  addToCart(top.product_id, `var_${top.product_id}_size_${selectedSize}`);
                   toggleResearchReport();
                 }}
                 className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-primary to-accent hover:opacity-95 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-primary-glow active:scale-98 transition-all"
               >
                 <ShoppingBag className="w-4 h-4" />
-                <span>Select Top Research Recommendation</span>
+                <span>Add UK {selectedSize} Recommendation to Bag</span>
               </button>
             </div>
           )}

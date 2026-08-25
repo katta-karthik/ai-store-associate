@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Sparkles, Send, X, Bot, User, Loader2 } from 'lucide-react';
+import { Sparkles, Send, X, Bot, User, Loader2, Mic, MicOff } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 
 const AGENT_API_URL = process.env.NEXT_PUBLIC_AGENT_API_URL || 'http://localhost:8001/api/v1';
@@ -10,6 +10,8 @@ export const ChatWidget: React.FC = () => {
   const {
     isChatOpen,
     toggleChat,
+    sessionId,
+    shopperId,
     setComparisonProducts,
     setResearchReport,
     chatMessages,
@@ -24,7 +26,9 @@ export const ChatWidget: React.FC = () => {
   } = useStore();
 
   const [input, setInput] = useState('');
+  const [isListening, setIsListening] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const recognitionRef = useRef<any>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -33,6 +37,52 @@ export const ChatWidget: React.FC = () => {
   useEffect(() => {
     scrollToBottom();
   }, [chatMessages]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const SpeechRecognition =
+        (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        const recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.lang = 'en-US';
+
+        recognition.onresult = (event: any) => {
+          const transcript = event.results[0][0].transcript;
+          if (transcript) {
+            setInput(transcript);
+            handleSendMessage(transcript);
+          }
+          setIsListening(false);
+        };
+
+        recognition.onerror = () => {
+          setIsListening(false);
+        };
+
+        recognition.onend = () => {
+          setIsListening(false);
+        };
+
+        recognitionRef.current = recognition;
+      }
+    }
+  }, []);
+
+  const toggleVoiceInput = () => {
+    if (!recognitionRef.current) {
+      alert('Speech recognition is not supported in your browser.');
+      return;
+    }
+    if (isListening) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    } else {
+      setIsListening(true);
+      recognitionRef.current.start();
+    }
+  };
 
   const quickPrompts = [
     '🔬 Flat feet marathon training shoe',
@@ -59,7 +109,8 @@ export const ChatWidget: React.FC = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          session_id: 'shopper_session_001',
+          session_id: sessionId || 'shopper_session_001',
+          shopper_id: shopperId || 'shopper_001',
           message: query,
         }),
       });
@@ -152,7 +203,7 @@ export const ChatWidget: React.FC = () => {
               <h3 className="font-bold text-sm text-white">AI Store Associate</h3>
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             </div>
-            <p className="text-[11px] text-zinc-400">Deep research, live filter sync & cart manager</p>
+            <p className="text-[11px] text-zinc-400">Voice shopping, deep research & live sync</p>
           </div>
         </div>
         <button
@@ -228,7 +279,7 @@ export const ChatWidget: React.FC = () => {
         ))}
       </div>
 
-      {/* Input Form */}
+      {/* Input Form with Voice Mic */}
       <div className="p-3 border-t border-surface-border bg-surface/90">
         <form
           onSubmit={(e) => {
@@ -239,12 +290,28 @@ export const ChatWidget: React.FC = () => {
         >
           <input
             type="text"
-            placeholder="Ask complex questions: 'Flat feet marathon shoe under ₹10k'..."
+            placeholder={isListening ? "Listening to your voice..." : "Ask or click mic to speak..."}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             disabled={isStreaming}
             className="flex-1 bg-transparent text-xs text-white placeholder-zinc-500 focus:outline-none"
           />
+
+          {/* Voice Mic Button */}
+          <button
+            type="button"
+            onClick={toggleVoiceInput}
+            className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all ${
+              isListening
+                ? 'bg-rose-500 text-white animate-pulse shadow-lg shadow-rose-500/40'
+                : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white'
+            }`}
+            title={isListening ? "Stop listening" : "Click to speak"}
+          >
+            {isListening ? <Mic className="w-4 h-4 text-white" /> : <Mic className="w-3.5 h-3.5" />}
+          </button>
+
+          {/* Send Button */}
           <button
             type="submit"
             disabled={!input.trim() || isStreaming}

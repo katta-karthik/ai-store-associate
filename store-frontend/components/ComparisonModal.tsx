@@ -1,15 +1,24 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { X, Check, Star, ShoppingBag, Zap, Award, Sparkles } from 'lucide-react';
 import { useStore, Product } from '@/store/useStore';
 
 export const ComparisonModal: React.FC = () => {
   const { isComparisonOpen, toggleComparisonModal, comparisonProducts, addToCart } = useStore();
+  const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({});
 
   if (!isComparisonOpen || comparisonProducts.length < 2) return null;
 
   const [p1, p2] = comparisonProducts;
+
+  const getActiveVariant = (product: Product) => {
+    return selectedVariants[product.id] || product.variants[0]?.id || '';
+  };
+
+  const handleSelectVariant = (productId: string, variantId: string) => {
+    setSelectedVariants((prev) => ({ ...prev, [productId]: variantId }));
+  };
 
   const specRows = [
     { label: 'Brand', v1: p1.brand, v2: p2.brand },
@@ -63,41 +72,66 @@ export const ComparisonModal: React.FC = () => {
 
           {/* Product Cards Side-by-Side */}
           <div className="grid grid-cols-2 gap-4 sm:gap-6">
-            {[p1, p2].map((prod) => (
-              <div key={prod.id} className="glass-panel rounded-2xl p-4 border border-surface-border flex flex-col justify-between space-y-3">
-                <div className="relative w-full h-44 rounded-xl overflow-hidden bg-zinc-900">
-                  <img
-                    src={prod.primary_image}
-                    alt={prod.title}
-                    className="w-full h-full object-cover"
-                  />
-                  <span className="absolute bottom-2 left-2 px-2.5 py-0.5 rounded-lg bg-black/70 backdrop-blur-md text-[11px] font-bold text-white">
-                    {prod.brand}
-                  </span>
-                </div>
-
-                <div>
-                  <h4 className="font-bold text-sm text-white line-clamp-1">{prod.title}</h4>
-                  <div className="flex items-center justify-between mt-1">
-                    <span className="text-base font-extrabold text-indigo-300">
-                      ₹{prod.base_price.toLocaleString('en-IN')}
+            {[p1, p2].map((prod) => {
+              const activeVariantId = getActiveVariant(prod);
+              return (
+                <div key={prod.id} className="glass-panel rounded-2xl p-4 border border-surface-border flex flex-col justify-between space-y-3">
+                  <div className="relative w-full h-44 rounded-xl overflow-hidden bg-zinc-900">
+                    <img
+                      src={prod.primary_image}
+                      alt={prod.title}
+                      className="w-full h-full object-cover"
+                    />
+                    <span className="absolute bottom-2 left-2 px-2.5 py-0.5 rounded-lg bg-black/70 backdrop-blur-md text-[11px] font-bold text-white">
+                      {prod.brand}
                     </span>
-                    <div className="flex items-center gap-1 text-amber-400 text-xs">
-                      <Star className="w-3.5 h-3.5 fill-amber-400" />
-                      <span className="font-bold">{prod.rating}</span>
+                  </div>
+
+                  <div>
+                    <h4 className="font-bold text-sm text-white line-clamp-1">{prod.title}</h4>
+                    <div className="flex items-center justify-between mt-1">
+                      <span className="text-base font-extrabold text-indigo-300">
+                        ₹{prod.base_price.toLocaleString('en-IN')}
+                      </span>
+                      <div className="flex items-center gap-1 text-amber-400 text-xs">
+                        <Star className="w-3.5 h-3.5 fill-amber-400" />
+                        <span className="font-bold">{prod.rating}</span>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <button
-                  onClick={() => addToCart(prod.id, prod.variants[0]?.id)}
-                  className="w-full py-2.5 rounded-xl bg-primary hover:bg-primary-hover text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-md shadow-primary-glow transition-all"
-                >
-                  <ShoppingBag className="w-3.5 h-3.5" />
-                  <span>Add to Bag</span>
-                </button>
-              </div>
-            ))}
+                  {/* Size Pill Selector */}
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-semibold text-zinc-400 uppercase">Select UK Size:</span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {prod.variants.map((v) => (
+                        <button
+                          key={v.id}
+                          onClick={() => handleSelectVariant(prod.id, v.id)}
+                          className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
+                            activeVariantId === v.id
+                              ? 'bg-primary text-white shadow-sm shadow-primary-glow border border-primary'
+                              : 'bg-zinc-800 text-zinc-300 border border-zinc-700 hover:border-zinc-500'
+                          }`}
+                        >
+                          UK {v.size}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      addToCart(prod.id, activeVariantId);
+                    }}
+                    className="w-full py-2.5 rounded-xl bg-primary hover:bg-primary-hover text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-md shadow-primary-glow transition-all"
+                  >
+                    <ShoppingBag className="w-3.5 h-3.5" />
+                    <span>Add to Bag</span>
+                  </button>
+                </div>
+              );
+            })}
           </div>
 
           {/* Comparison Table */}

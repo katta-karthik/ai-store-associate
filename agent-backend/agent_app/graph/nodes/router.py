@@ -5,7 +5,7 @@ from agent_app.schemas.agent_state import ShopAgentState
 
 
 def intent_router_node(state: ShopAgentState) -> Dict[str, Any]:
-    """Classify the incoming shopper query into an intent category."""
+    """Classify the incoming shopper query into an intent category with contextual follow-up awareness."""
     query = state.user_query.lower().strip()
 
     deep_research_keywords = [
@@ -20,12 +20,14 @@ def intent_router_node(state: ShopAgentState) -> Dict[str, Any]:
     ]
     compare_keywords = [
         "compare", "difference between", "which is better", " vs ", " versus ",
-        "side by side", "better for", "how do they compare", "which one should i get"
+        "side by side", "better for", "how do they compare", "which one should i get",
+        "which is lighter", "which is more comfortable"
     ]
     search_keywords = [
         "shoe", "shoes", "sneaker", "sneakers", "running", "trail", "under",
         "below", "price", "size", "nike", "adidas", "puma", "salomon", "look",
-        "find", "show", "search", "buy", "recommend", "want", "need", "pair"
+        "find", "show", "search", "buy", "recommend", "want", "need", "pair",
+        "cheaper", "expensive", "black", "white", "more options"
     ]
 
     if any(k in query for k in deep_research_keywords):

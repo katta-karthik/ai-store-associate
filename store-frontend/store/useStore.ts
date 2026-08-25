@@ -66,6 +66,8 @@ export interface StoreFilters {
 }
 
 interface StoreState {
+  sessionId: string;
+  shopperId: string;
   products: Product[];
   isLoading: boolean;
   filters: StoreFilters;
@@ -92,6 +94,7 @@ interface StoreState {
   isStreaming: boolean;
 
   // Actions
+  initializeSession: () => void;
   setFilters: (newFilters: Partial<StoreFilters>) => void;
   setHighlightedProducts: (ids: string[]) => void;
   setComparisonProducts: (products: Product[]) => void;
@@ -115,7 +118,28 @@ interface StoreState {
 
 const STORE_API_URL = process.env.NEXT_PUBLIC_STORE_API_URL || 'http://localhost:8000/api/v1';
 
+function getOrSetSessionId(): { sessionId: string; shopperId: string } {
+  if (typeof window === 'undefined') {
+    return { sessionId: 'shopper_session_001', shopperId: 'shopper_001' };
+  }
+  let sid = localStorage.getItem('shopagent_session_id');
+  let uid = localStorage.getItem('shopagent_shopper_id');
+  if (!sid) {
+    sid = `sess_${Math.random().toString(36).substring(2, 11)}`;
+    localStorage.setItem('shopagent_session_id', sid);
+  }
+  if (!uid) {
+    uid = `shopper_${Math.random().toString(36).substring(2, 11)}`;
+    localStorage.setItem('shopagent_shopper_id', uid);
+  }
+  return { sessionId: sid, shopperId: uid };
+}
+
+const initialIds = getOrSetSessionId();
+
 export const useStore = create<StoreState>((set, get) => ({
+  sessionId: initialIds.sessionId,
+  shopperId: initialIds.shopperId,
   products: [],
   isLoading: false,
   filters: {
@@ -131,13 +155,13 @@ export const useStore = create<StoreState>((set, get) => ({
   researchReport: null,
   isResearchReportOpen: false,
   cart: {
-    cart_id: 'cart_shopper_session_001',
+    cart_id: `cart_${initialIds.sessionId}`,
     items: [],
     item_count: 0,
     subtotal: 0,
   },
   wishlist: {
-    wishlist_id: 'wishlist_shopper_session_001',
+    wishlist_id: `wishlist_${initialIds.sessionId}`,
     items: [],
     item_count: 0,
   },
@@ -145,7 +169,7 @@ export const useStore = create<StoreState>((set, get) => ({
     {
       id: 'welcome_msg',
       role: 'assistant',
-      content: "👋 Hi! I'm your **ShopAgent AI Associate**. Ask me anything like *'I have flat feet and need a marathon shoe'* or *'Compare Pegasus vs Ultraboost'*, and I'll research and adapt the store live!",
+      content: "👋 Hi! I'm your **ShopAgent AI Associate**. Ask me anything like *'I have flat feet and need a marathon shoe'* or *'Compare Pegasus vs Ultraboost'*, or click the 🎙️ mic to speak!",
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     }
   ],
@@ -153,6 +177,16 @@ export const useStore = create<StoreState>((set, get) => ({
   isCartOpen: false,
   isWishlistOpen: false,
   isStreaming: false,
+
+  initializeSession: () => {
+    const { sessionId, shopperId } = getOrSetSessionId();
+    set({
+      sessionId,
+      shopperId,
+      cart: { cart_id: `cart_${sessionId}`, items: [], item_count: 0, subtotal: 0 },
+      wishlist: { wishlist_id: `wishlist_${sessionId}`, items: [], item_count: 0 },
+    });
+  },
 
   setFilters: (newFilters) => {
     set((state) => ({
