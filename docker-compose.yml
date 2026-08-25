@@ -38,11 +38,11 @@ services:
       retries: 3
     restart: unless-stopped
 
-  store-frontend:
+  demo-store-frontend:
     build:
-      context: ./store-frontend
+      context: ./demo-store/frontend
       dockerfile: Dockerfile
-    container_name: shopagent-storefront
+    container_name: shopagent-demo-storefront
     ports:
       - "3000:3000"
     environment:

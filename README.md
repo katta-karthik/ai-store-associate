@@ -6,7 +6,7 @@
 [![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688.svg?logo=fastapi)](https://fastapi.tiangolo.com)
 [![Next.js](https://img.shields.io/badge/Frontend-Next.js%2015-black.svg?logo=next.js)](https://nextjs.org)
 [![LangGraph](https://img.shields.io/badge/AI%20Orchestration-LangGraph-FF6F00.svg)](https://langchain-ai.github.io/langgraph/)
-[![PostgreSQL](https://img.shields.io/badge/Memory-PostgreSQL%20%2B%20pgvector-336791.svg?logo=postgresql)](https://github.com/pgvector/pgvector)
+[![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-blue.svg)](https://python.org)
 
 ---
 
@@ -14,68 +14,97 @@
 
 Most online shopping interfaces force customers to manually browse filter menus, categories, and keyword search bars. 
 
-**ShopAgent** is an agentic AI Store Associate that sits on top of any e-commerce storefront (Shopify, WooCommerce, custom Next.js/React stores). It acts like an expert human salesperson in a physical store:
-* **Active UI Control**: Automatically updates store filters, price sliders, and product grids in real-time as the shopper talks.
-* **Intelligent Commerce Operations**: Compares products, provides honest critiques, explains technical specs, and manages cart/wishlist operations.
-* **Persistent Shopper Memory**: Retains sizing preferences, brand affinity, and stylistic tastes across sessions via semantic vector memory (`pgvector`).
-* **Universal Store SDK**: Completely decoupled from underlying e-commerce platforms with a standardized adapter contract.
+**ShopAgent** is an agentic AI Store Sales Associate that integrates into any e-commerce storefront (Shopify, WooCommerce, custom Next.js/React stores):
+* **Walkalong Retail Experience**: A personal AI associate that walks with the shopper, offering live sizing advice, charming pitch compliments, and closing deals.
+* **Active UI Synchronization**: Automatically applies store filters, highlights products, triggers side-by-side comparison modals, and displays deep research biomechanics match drawers in real-time via Server-Sent Events (SSE).
+* **Voice Shopping**: Web Speech API integration allows hands-free voice conversations directly with the associate.
+* **Universal Commerce SDK**: Connects to any e-commerce platform via typed Store Adapters (`ShopifyStoreAdapter`, `DemoStoreAdapter`, `UniversalStoreAdapter`).
+* **Persistent Shopper Memory**: Retains sizing preferences, brand affinities, and past feedback across sessions with PII sanitization.
 
 ---
 
-## 🏛️ System Architecture
+## 🏛️ Modular Decoupled Architecture
+
+The repository is organized into three distinct layers:
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                 SHOPAGENT RUNTIME ECOSYSTEM                 │
-├──────────────────────────────┬──────────────────────────────┤
-│      EMBEDDABLE SDK          │      AI ASSOCIATE BRAIN      │
-│  Next.js / React / Shopify   │  FastAPI + LangGraph Engine  │
-│  Real-time SSE UI Sync       │  pgvector Semantic Memory    │
-└──────────────┬───────────────┴──────────────┬───────────────┘
-               │                              │
-               ▼                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│                 UNIVERSAL COMMERCE ADAPTER                  │
-│       Standardized REST / Webhook Integration Layer         │
-└──────────────────────────────┬──────────────────────────────┘
-                               │
-            ┌──────────────────┼──────────────────┐
-            ▼                  ▼                  ▼
-      ┌───────────┐      ┌───────────┐      ┌───────────┐
-      │  Shopify  │      │WooCommerce│      │Custom API │
-      └───────────┘      └───────────┘      └───────────┘
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                       SHOPAGENT CORE PRODUCT REPO                           │
+├──────────────────────────────────────┬──────────────────────────────────────┤
+│     1. CLIENT WEB SDK & WIDGET       │      2. AI AGENT BRAIN ENGINE        │
+│       (@shopagent/client-sdk)        │          (agent-backend/)            │
+│  - <ShopAgentCompanion />            │  - LangGraph Multi-Agent Workflows   │
+│  - <ComparisonModal />               │  - Sizing Fit & Biomechanics Advisor │
+│  - <ResearchReportDrawer />          │  - Persistent Memory Store           │
+│  - useShopAgent() React Hook         │  - Real-Time SSE Stream Endpoint     │
+└──────────────────┬───────────────────┴──────────────────┬───────────────────┘
+                   │                                      │
+                   ▼                                      ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                 3. UNIVERSAL STORE SDK & ADAPTERS (sdk/store-sdk/)          │
+│       Standardized Data Transfer Objects (DTOs) & Typed Connector Interface │
+└──────────────────────────────────────┬──────────────────────────────────────┘
+                                       │
+       ┌───────────────────────────────┼───────────────────────────────┐
+       ▼                               ▼                               ▼
+┌──────────────┐                ┌──────────────┐                ┌──────────────┐
+│   Shopify    │                │  WooCommerce │                │ Demo Store / │
+│   Storefront │                │   REST API   │                │  Custom REST │
+│   GraphQL    │                │   Adapter    │                │   Adapter    │
+└──────────────┘                └──────────────┘                └──────────────┘
+```
+
+### 📦 Repository Structure:
+* **`agent-backend/`** — Multi-agent LangGraph AI Brain & SSE streaming API (`port 8001`).
+* **`sdk/store-sdk/`** — Python Store SDK containing `UniversalStoreAdapter`, `ShopifyStoreAdapter`, `DemoStoreAdapter`, and `adapter_factory.py`.
+* **`sdk/client-sdk/`** — Frontend Web SDK containing `<ShopAgentCompanion />`, comparison modal, research report drawer, and `useShopAgent` hook.
+* **`tests/`** — Automated test suite covering agent brain workflows, memory, and store adapters (27/27 passing).
+* **`demo-store/`** — *[Sandbox / Local Demo]* Isolated mock e-commerce store (`demo-store/backend` + `demo-store/frontend`) used exclusively for local testing, decoupled and gitignored.
+
+---
+
+## 🚀 Quickstart Guide
+
+### 1. Run the AI Agent Brain
+```bash
+cd agent-backend
+pip install -r requirements.txt
+uvicorn agent_app.main:app --reload --port 8001
+```
+
+### 2. Connect Your Storefront using the Client SDK
+```tsx
+import { ShopAgentCompanion, useShopAgent } from '@shopagent/client-sdk';
+
+export default function MyStorefront() {
+  return (
+    <div className="store-layout">
+      {/* Merchant Store Content */}
+      <Header />
+      <ProductCatalog />
+
+      {/* Embed the AI Sales Associate with 1 Line */}
+      <ShopAgentCompanion
+        config={{
+          agentApiUrl: 'http://localhost:8001/api/v1',
+          onFilterChange: (filters) => applyStoreFilters(filters),
+          onAddToCart: (prodId, varId) => handleAddToCart(prodId, varId),
+        }}
+      />
+    </div>
+  );
+}
+```
+
+### 3. Run Automated Tests
+```bash
+python -m pytest
 ```
 
 ---
 
 ## 🏢 Virtual Enterprise Structure
 
-This repository is developed and maintained by our autonomous AI virtual startup organization:
-* **👑 Executive Board**: Strategy, velocity, and milestone delivery.
-* **🏛️ System Architecture**: OpenAPI/AsyncAPI contracts, database schemas, and state graphs.
-* **⚙️ Backend & Commerce Engine**: Async FastAPI, SQLAlchemy, pgvector, and tool handlers.
-* **🎨 Frontend & UI Experience**: Next.js App Router, SSE streaming, and micro-animations.
-* **🧪 QA & Chaos Testing**: 100% automated test coverage, negative input fuzzing, and load simulations.
-* **🛡️ SRE & Platform Reliability**: 0-crash policy, circuit breakers, containerization, and health probes.
-* **🔒 Security & Compliance (SecOps)**: Prompt injection defense, PII sanitization, and secrets management.
-* **🚀 Growth & GTM Solutions**: SDK packaging, merchant integration playbooks, and demo video scripts.
-* **🧬 Dynamic Org Growth Architect**: Meta-agent that auto-spawns new specialized domain roles as the codebase scales.
-
-For full departmental operating guidelines, see [AGENTS.md](AGENTS.md).
-
----
-
-## 🚦 Development Milestones
-
-- [ ] **Milestone 1**: Universal Store Contract & Demo E-Commerce Foundation
-- [ ] **Milestone 2**: Natural Language Agent Search & Product Display
-- [ ] **Milestone 3**: Dynamic Agent UI & Filter Control via Real-time SSE
-- [ ] **Milestone 4**: Interactive Cart & Wishlist Commerce Mutations
-- [ ] **Milestone 5**: Persistent Shopper Memory across Sessions (`pgvector`)
-- [ ] **Milestone 6**: In-Store Salesperson Behavior (Comparison, Critiques, Recommendations)
-- [ ] **Milestone 7**: Deep Shopping Agents for Complex Autonomous Research
-
----
-
-## 🛠️ Version Control & Contribution
-We follow **Conventional Commits** and **Trunk-Based Feature Branching** (`feature/*`, `fix/*`). Direct commits to `main` are protected.
+This repository is governed by the 14-department autonomous AI enterprise defined in [AGENTS.md](AGENTS.md).
+* **Active Milestone**: [PROJECT_STATE.md](PROJECT_STATE.md)
+* **API & Reliability Guardrails**: [`.agents/rules/`](.agents/rules/)

@@ -4,7 +4,7 @@
 
 ---
 
-## 🚦 Overall Roadmap & Milestone Status (v1.1.0 Enterprise GA)
+## 🚦 Overall Roadmap & Milestone Status (v1.3.0 Universal Embed & Feed GA)
 
 | Milestone | Description | Status | Active Department |
 | :--- | :--- | :--- | :--- |
@@ -17,40 +17,37 @@
 | **Milestone 6** | Salesperson Behavior (Comparison, Critiques, Fit Recommendations) | 🟢 **COMPLETED** | 🧠 AI Eval & 🎨 Frontend |
 | **Milestone 7** | Deep Shopping Research Agent & Complex Intent Critique | 🟢 **COMPLETED** | 🧠 AI Eval & 🏛️ Architecture |
 | **v1.1.0 Enhancements** | Voice Shopping Mic, Interactive Size Pills, Session UUIDs & Shopify Adapter | 🟢 **COMPLETED** | 🎨 Frontend, 🏛️ Architecture & 🧠 AI Eval |
+| **v1.2.0 Decoupled Architecture** | Core Product (Brain + Store SDK + Web Widget SDK) vs Isolated Demo Sandbox | 🟢 **COMPLETED** | 🏛️ Product Architecture & ⚡ Modernization |
+| **v1.3.0 Universal Embed & Feeds** | 1-Line Shadow DOM Script (`shopagent.js`) + Catalog Feed Ingestion Adapter | 🟢 **COMPLETED** | 🎨 Frontend & 🏛️ Architecture |
 
 ---
 
-## 📌 Current State & Production Release (v1.1.0-GA)
+## 📌 Current State & Production Release (v1.3.0-GA)
 
-* **Active Git Branch**: `main` (All features merged and in 100% sync on GitHub)
+* **Active Git Branch**: `main`
 * **Remote Repository**: `https://github.com/katta-karthik/ai-store-associate.git`
-* **Complete Product Capabilities Shipped**:
-  1. **Universal Store SDK (`sdk/store-sdk/`)**:
-     - `UniversalStoreAdapter` ABC interface.
-     - `ShopifyStoreAdapter` Storefront GraphQL API client.
-     - `DemoStoreAdapter` HTTP client.
-  2. **Demo Store Commerce Engine (`demo-store/backend/`)**: FastAPI catalog search, price range & category filtering, and atomic cart/wishlist sessions.
-  3. **LangGraph Agentic Brain (`agent-backend/`)**:
-     - Intent Router (Search, Chat, Cart, Compare, Deep Research).
-     - Natural Language Entity & Filter Extractor.
-     - Consultative Salesperson & Sizing Fit Advisor (with tailored profile size recommendations).
-     - Persistent Shopper Long-Term Memory with PII sanitization.
-     - Side-by-Side Product Comparison Evaluator.
-     - Multi-Constraint Deep Shopping Research & Match Scoring Engine.
-     - Real-Time Server-Sent Events (SSE) stream (`/api/v1/chat/stream`).
-  4. **Next.js 15 App Router Storefront (`store-frontend/`)**:
-     - Dark-mode glassmorphism e-commerce storefront with reactive Tailwind styling.
-     - Web Speech API Voice Shopping Microphone button.
-     - Dynamic Browser `localStorage` Session UUID Isolation.
-     - Interactive UK Size Selectors in Comparison Modal & Research Drawer.
-     - Slide-out Cart Drawer and Wishlist Drawer.
-     - Side-by-Side Visual Comparison Modal.
-     - Deep Research Biomechanical Match Report Drawer.
-  5. **100% Automated QA & AI Evaluation Harness**:
-     - 25/25 automated tests passing.
-     - `npm run build` compiled with 0 TypeScript/lint errors.
-  6. **Enterprise Architecture & Docker Orchestration**:
-     - Multi-container `docker-compose.yml` orchestrating demo-store (8000), agent-brain (8001), and storefront (3000).
+* **Clean Decoupled Architecture**:
+  1. **Universal 1-Line Embed Script (`sdk/client-sdk/embed/shopagent.js`)**:
+     - 100% Zero-Crash Web Component with isolated Shadow DOM.
+     - Embeddable on ANY e-commerce store with 1 line: `<script src="shopagent.js" data-store-id="..." async></script>`.
+     - Event Bridge: Emits decoupled `shopagent:filter-change` and `shopagent:cart-sync` CustomEvents to the merchant page.
+  2. **Product Catalog Feed Adapter (`sdk/store-sdk/feed_adapter.py`)**:
+     - Ingests standard JSON/XML product feeds (`/products.json` or Google Merchant Feed) from Spring Boot, MERN, Django, or PHP stores with ZERO backend code required from the merchant.
+  3. **Core Product: AI Agent Brain (`agent-backend/`)**:
+     - Multi-Agent LangGraph Workflows (Search, Cart, Sizing Fit Advisor, Long-Term Memory, Side-by-Side Comparison, Deep Research).
+     - Standard Server-Sent Events (SSE) Real-Time Streaming endpoint (`/api/v1/chat/stream`).
+  4. **Core Product: Universal Store SDK & Connectors (`sdk/store-sdk/`)**:
+     - `UniversalStoreAdapter` ABC interface with typed Pydantic DTOs.
+     - `ShopifyStoreAdapter` GraphQL Storefront API client.
+     - `DemoStoreAdapter` REST client.
+     - `CatalogFeedAdapter` zero-backend JSON feed client.
+     - `adapter_factory.py` dynamic connector factory.
+  5. **Core Product: Client Web SDK & Embeddable Widget (`sdk/client-sdk/`)**:
+     - `<ShopAgentCompanion />`, `<ComparisonModal />`, `<ResearchReportDrawer />`.
+     - `useShopAgent` React hook with Web Speech API voice shopping mic.
+  6. **100% Automated QA & AI Evaluation Harness**:
+     - 29/29 automated tests passing (`tests/agent_brain/`, `tests/sdk/`, `tests/demo_store/`).
+     - `npm run build` in `demo-store/frontend` compiles with 0 TypeScript/lint errors.
 
 ---
 
@@ -62,6 +59,8 @@
 ---
 
 ## 📝 Change Log & Version History
-* `v0.1.0-alpha` - `v0.7.0-alpha`: Bootstrapped Enterprise Foundation, SDK, Search Engine, Next.js Storefront, Cart & Wishlist Mutations, Memory Graph, and Comparison Modals.
+* `v0.1.0` - `v0.7.0`: Bootstrapped Enterprise Foundation, SDK, Search Engine, Next.js Storefront, Cart & Wishlist Mutations, Memory Graph, and Comparison Modals.
 * `v1.0.0`: Shipped Milestone 7 (Deep Shopping Research Agent & Match Confidence Drawer).
 * `v1.1.0`: Shipped Voice Shopping Mic, Interactive Size Selectors, Dynamic Session UUIDs, Sizing Feedback Loops, and Shopify Storefront GraphQL Adapter.
+* `v1.2.0`: Decoupled Core Product (Agent Brain + Store SDK + Web Widget SDK) from isolated Demo Store Sandbox.
+* `v1.3.0`: Shipped Universal 1-Line Shadow DOM Embed Script (`shopagent.js`) & Zero-Backend Catalog Feed Adapter (`CatalogFeedAdapter`).

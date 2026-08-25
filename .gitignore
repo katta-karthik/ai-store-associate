@@ -57,3 +57,7 @@ Thumbs.db
 *.sqlite3
 *.db
 data/
+
+# Demo Store Sandbox (Excluded from GitHub repository - used for local testing/demo only)
+demo-store/
+demo_store.db

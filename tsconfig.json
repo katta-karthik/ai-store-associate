@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "paths": {
+      "@shopagent/client-sdk": ["./sdk/client-sdk/index.ts"],
+      "@shopagent/client-sdk/*": ["./sdk/client-sdk/*"]
+    }
+  },
+  "include": [
+    "sdk/client-sdk/**/*.ts",
+    "sdk/client-sdk/**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules",
+    "demo-store"
+  ]
+}

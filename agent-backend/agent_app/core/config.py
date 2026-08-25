@@ -10,8 +10,11 @@ class AgentSettings(BaseSettings):
     VERSION: str = "0.1.0"
     API_V1_PREFIX: str = "/api/v1"
     
-    # Store Connection URL (Universal Commerce API)
+    # Store Connection & Adapter Configuration
+    STORE_ADAPTER_TYPE: str = os.getenv("STORE_ADAPTER_TYPE", "demo")
     STORE_API_URL: str = os.getenv("STORE_API_URL", "http://localhost:8000/api/v1")
+    SHOPIFY_STORE_DOMAIN: str = os.getenv("SHOPIFY_STORE_DOMAIN", "")
+    SHOPIFY_STOREFRONT_TOKEN: str = os.getenv("SHOPIFY_STOREFRONT_TOKEN", "")
     
     # LLM Settings
     GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")

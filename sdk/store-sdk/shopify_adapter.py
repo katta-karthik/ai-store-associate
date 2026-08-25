@@ -5,17 +5,30 @@ Enables turnkey integration with any live Shopify store via the Storefront API.
 
 from typing import Any, Dict, List, Optional
 import httpx
-from universal_adapter import (
-    CartDTO,
-    CartItemDTO,
-    ProductDTO,
-    ProductSearchParams,
-    ProductSearchResultDTO,
-    ProductVariantDTO,
-    UniversalStoreAdapter,
-    WishlistDTO,
-    WishlistItemDTO,
-)
+try:
+    from .universal_adapter import (
+        CartDTO,
+        CartItemDTO,
+        ProductDTO,
+        ProductSearchParams,
+        ProductSearchResultDTO,
+        ProductVariantDTO,
+        UniversalStoreAdapter,
+        WishlistDTO,
+        WishlistItemDTO,
+    )
+except ImportError:
+    from universal_adapter import (
+        CartDTO,
+        CartItemDTO,
+        ProductDTO,
+        ProductSearchParams,
+        ProductSearchResultDTO,
+        ProductVariantDTO,
+        UniversalStoreAdapter,
+        WishlistDTO,
+        WishlistItemDTO,
+    )
 
 
 class ShopifyStoreAdapter(UniversalStoreAdapter):

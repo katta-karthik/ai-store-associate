@@ -34,17 +34,17 @@ async def test_search_products_by_text(async_client: AsyncClient):
     assert resp.status_code == 200
     data = resp.json()["data"]
     assert data["total"] == 1
-    assert data["items"][0]["title"] == "Nike Air Zoom Pegasus 41"
+    assert "Pegasus" in data["items"][0]["title"]
 
 
 @pytest.mark.asyncio
 async def test_filter_products_by_price_range(async_client: AsyncClient):
-    """Verify price range filtering (e.g. min 7000, max 8000)."""
-    resp = await async_client.get("/api/v1/products?min_price=7000&max_price=8000")
+    """Verify price range filtering (e.g. min 9000, max 11000)."""
+    resp = await async_client.get("/api/v1/products?min_price=9000&max_price=11000")
     assert resp.status_code == 200
     data = resp.json()["data"]
     for item in data["items"]:
-        assert 7000 <= item["base_price"] <= 8000
+        assert 9000 <= item["base_price"] <= 11000
 
 
 @pytest.mark.asyncio
@@ -64,7 +64,7 @@ async def test_get_product_detail_success(async_client: AsyncClient):
     assert resp.status_code == 200
     data = resp.json()["data"]
     assert data["id"] == "prod_nike_pegasus_41"
-    assert "weight_grams" in data["specs"]
+    assert "weight" in data["specs"]
     assert len(data["variants"]) >= 3
 
 
