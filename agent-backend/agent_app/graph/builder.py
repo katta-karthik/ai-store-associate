@@ -2,6 +2,7 @@
 
 from langgraph.graph import END, StateGraph
 from agent_app.graph.nodes.cart_manager import cart_manager_node
+from agent_app.graph.nodes.deep_research import deep_research_node
 from agent_app.graph.nodes.memory_loader import memory_loader_node
 from agent_app.graph.nodes.product_comparator import product_comparator_node
 from agent_app.graph.nodes.router import intent_router_node
@@ -18,11 +19,13 @@ def _route_next_step(state: ShopAgentState) -> str:
         return "cart_manager"
     elif state.intent == "compare_products":
         return "product_comparator"
+    elif state.intent == "deep_research":
+        return "deep_research"
     return "salesperson_responder"
 
 
 def build_shopagent_graph():
-    """Compile the LangGraph state graph for ShopAgent with memory and product comparison."""
+    """Compile the LangGraph state graph for ShopAgent with memory, comparison, and deep research."""
     workflow = StateGraph(ShopAgentState)
 
     # 1. Register Nodes
@@ -32,6 +35,7 @@ def build_shopagent_graph():
     workflow.add_node("salesperson_responder", salesperson_responder_node)
     workflow.add_node("cart_manager", cart_manager_node)
     workflow.add_node("product_comparator", product_comparator_node)
+    workflow.add_node("deep_research", deep_research_node)
 
     # 2. Set Entry Point to Memory Loader
     workflow.set_entry_point("memory_loader")
@@ -45,6 +49,7 @@ def build_shopagent_graph():
             "search_extractor": "search_extractor",
             "cart_manager": "cart_manager",
             "product_comparator": "product_comparator",
+            "deep_research": "deep_research",
             "salesperson_responder": "salesperson_responder",
         },
     )
@@ -54,6 +59,7 @@ def build_shopagent_graph():
     workflow.add_edge("salesperson_responder", END)
     workflow.add_edge("cart_manager", END)
     workflow.add_edge("product_comparator", END)
+    workflow.add_edge("deep_research", END)
 
     return workflow.compile()
 

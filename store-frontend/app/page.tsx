@@ -8,6 +8,7 @@ import { ChatWidget } from '@/components/ChatWidget';
 import { CartDrawer } from '@/components/CartDrawer';
 import { WishlistDrawer } from '@/components/WishlistDrawer';
 import { ComparisonModal } from '@/components/ComparisonModal';
+import { ResearchReportDrawer } from '@/components/ResearchReportDrawer';
 import { useStore } from '@/store/useStore';
 import { Sparkles, ShieldCheck, Zap, RefreshCw } from 'lucide-react';
 
@@ -41,7 +42,7 @@ export default function StorefrontPage() {
             </h1>
             <p className="text-zinc-400 text-sm sm:text-base leading-relaxed">
               Experience conversational shopping. Speak naturally and watch your store filters,
-              side-by-side product comparisons, wishlist, and cart adapt in real time.
+              side-by-side product comparisons, deep research fit scores, and cart adapt in real time.
             </p>
           </div>
 
@@ -104,6 +105,7 @@ export default function StorefrontPage() {
       <CartDrawer />
       <WishlistDrawer />
       <ComparisonModal />
+      <ResearchReportDrawer />
 
       {/* Floating AI Store Associate Chat Widget */}
       <ChatWidget />

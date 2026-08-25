@@ -8,6 +8,11 @@ def intent_router_node(state: ShopAgentState) -> Dict[str, Any]:
     """Classify the incoming shopper query into an intent category."""
     query = state.user_query.lower().strip()
 
+    deep_research_keywords = [
+        "flat feet", "overpronation", "knee pain", "joint pain", "first marathon",
+        "training for", "best shoe for someone", "road and trail", "hybrid run",
+        "deep research", "critique", "which shoe should i get for marathon"
+    ]
     wishlist_keywords = ["wishlist", "save for later", "save this", "favorite", "bookmark"]
     cart_keywords = [
         "cart", "add to cart", "bag", "add to bag", "basket", "checkout",
@@ -23,7 +28,9 @@ def intent_router_node(state: ShopAgentState) -> Dict[str, Any]:
         "find", "show", "search", "buy", "recommend", "want", "need", "pair"
     ]
 
-    if any(k in query for k in compare_keywords):
+    if any(k in query for k in deep_research_keywords):
+        intent = "deep_research"
+    elif any(k in query for k in compare_keywords):
         intent = "compare_products"
     elif any(k in query for k in wishlist_keywords):
         intent = "wishlist_action"

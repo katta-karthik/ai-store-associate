@@ -72,6 +72,8 @@ interface StoreState {
   highlightedProductIds: string[];
   comparisonProducts: Product[];
   isComparisonOpen: boolean;
+  researchReport: any | null;
+  isResearchReportOpen: boolean;
   cart: {
     cart_id: string;
     items: CartItem[];
@@ -94,6 +96,8 @@ interface StoreState {
   setHighlightedProducts: (ids: string[]) => void;
   setComparisonProducts: (products: Product[]) => void;
   toggleComparisonModal: () => void;
+  setResearchReport: (report: any) => void;
+  toggleResearchReport: () => void;
   fetchProducts: () => Promise<void>;
   fetchCart: () => Promise<void>;
   addToCart: (productId: string, variantId: string) => Promise<void>;
@@ -124,6 +128,8 @@ export const useStore = create<StoreState>((set, get) => ({
   highlightedProductIds: [],
   comparisonProducts: [],
   isComparisonOpen: false,
+  researchReport: null,
+  isResearchReportOpen: false,
   cart: {
     cart_id: 'cart_shopper_session_001',
     items: [],
@@ -139,7 +145,7 @@ export const useStore = create<StoreState>((set, get) => ({
     {
       id: 'welcome_msg',
       role: 'assistant',
-      content: "👋 Hi! I'm your **ShopAgent AI Associate**. Ask me anything like *'Compare Pegasus vs Ultraboost'* or *'Add Nike Pegasus in size 10 to my cart'*, and I'll adapt the store for you!",
+      content: "👋 Hi! I'm your **ShopAgent AI Associate**. Ask me anything like *'I have flat feet and need a marathon shoe'* or *'Compare Pegasus vs Ultraboost'*, and I'll research and adapt the store live!",
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     }
   ],
@@ -165,6 +171,14 @@ export const useStore = create<StoreState>((set, get) => ({
 
   toggleComparisonModal: () => {
     set((state) => ({ isComparisonOpen: !state.isComparisonOpen }));
+  },
+
+  setResearchReport: (report) => {
+    set({ researchReport: report, isResearchReportOpen: true });
+  },
+
+  toggleResearchReport: () => {
+    set((state) => ({ isResearchReportOpen: !state.isResearchReportOpen }));
   },
 
   fetchProducts: async () => {

@@ -7,14 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.0] - 2026-08-25
+
+### Added - Milestone 7: Deep Shopping Research Agent & General Availability Release
+- **Multi-Constraint Deep Research Engine**: Implemented `deep_research_node` in `agent-backend/agent_app/graph/nodes/deep_research.py` to synthesize complex queries (biomechanics, marathon training, flat feet, hybrid gravel/road terrain, price ceilings).
+- **Match Confidence & Critic Scorer**: Quantitative match scoring algorithm evaluating candidates on impact cushioning, durability, and outsole grip with transparent trade-off analysis.
+- **Deep Research UI Drawer**: Built `store-frontend/components/ResearchReportDrawer.tsx` displaying match percentage badges, biomechanical fit tags, pros list, and one-click recommendation selection.
+- **Dynamic UI Actions**: Emitted `SHOW_RESEARCH_REPORT` via real-time SSE stream.
+- **Full System QA Verification**: 24 automated tests passing across the entire repository.
+- **Production Build Validated**: Next.js 15 App Router production bundle compiled with 0 TypeScript/lint errors.
+
+---
+
 ## [0.7.0-alpha] - 2026-08-25
 
 ### Added - Milestone 6: Salesperson Behavior (Comparison, Critiques & Fit Recommendations)
-- **Side-by-Side Product Comparison Engine**: Implemented `product_comparator_node` in `agent-backend/agent_app/graph/nodes/product_comparator.py` comparing shoe cushioning, weight, heel-to-toe drop, terrain, and price.
+- **Side-by-Side Product Comparison Engine**: Implemented `product_comparator_node` comparing shoe cushioning, weight, heel-to-toe drop, terrain, and price.
 - **Interactive Visual Comparison Modal**: Built `store-frontend/components/ComparisonModal.tsx` displaying structured spec tables and direct "Add to Bag" buttons.
 - **Sizing & Fit Advisory Intelligence**: Heuristic rules providing half-size recommendations for athletic fits (e.g. Salomon trail footwear).
 - **Dynamic UI Actions**: Dispatched `OPEN_COMPARISON_MODAL` with real-time SSE stream events.
-- **Automated QA & Evaluation Suite**: 23 automated tests passing across the repository.
 
 ---
 

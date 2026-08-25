@@ -11,6 +11,7 @@ export const ChatWidget: React.FC = () => {
     isChatOpen,
     toggleChat,
     setComparisonProducts,
+    setResearchReport,
     chatMessages,
     addChatMessage,
     updateLastAssistantMessage,
@@ -34,8 +35,8 @@ export const ChatWidget: React.FC = () => {
   }, [chatMessages]);
 
   const quickPrompts = [
+    '🔬 Flat feet marathon training shoe',
     '⚖️ Compare Pegasus vs Ultraboost',
-    '👟 Road running shoes under ₹8k',
     '🛒 Add Nike Pegasus size 10 to cart',
     '💖 Save Salomon to wishlist',
   ];
@@ -102,6 +103,8 @@ export const ChatWidget: React.FC = () => {
                 if (actionObj.payload.products) {
                   setComparisonProducts(actionObj.payload.products);
                 }
+              } else if (actionObj.action === 'SHOW_RESEARCH_REPORT') {
+                setResearchReport(actionObj.payload);
               } else if (actionObj.action === 'SYNC_CART') {
                 fetchCart();
               } else if (actionObj.action === 'OPEN_CART_DRAWER') {
@@ -149,7 +152,7 @@ export const ChatWidget: React.FC = () => {
               <h3 className="font-bold text-sm text-white">AI Store Associate</h3>
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             </div>
-            <p className="text-[11px] text-zinc-400">Controls filters, compares & adds to cart live</p>
+            <p className="text-[11px] text-zinc-400">Deep research, live filter sync & cart manager</p>
           </div>
         </div>
         <button
@@ -195,7 +198,7 @@ export const ChatWidget: React.FC = () => {
               ) : (
                 <div className="flex items-center gap-1.5 py-1 text-zinc-400">
                   <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
-                  <span>Analyzing shoes & preparing advice...</span>
+                  <span>Synthesizing multi-constraint research...</span>
                 </div>
               )}
               <span className="block text-[9px] text-zinc-500 text-right mt-1.5">{msg.timestamp}</span>
@@ -236,7 +239,7 @@ export const ChatWidget: React.FC = () => {
         >
           <input
             type="text"
-            placeholder="Ask to compare Pegasus vs Ultraboost, check sizing..."
+            placeholder="Ask complex questions: 'Flat feet marathon shoe under ₹10k'..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
             disabled={isStreaming}
