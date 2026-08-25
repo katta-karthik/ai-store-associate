@@ -4,6 +4,10 @@ Welcome to the **ShopAgent Autonomous Virtual Enterprise**. This repository oper
 
 Every feature, refactor, and security patch flows through our dedicated C-Suite leadership, specialized engineering departments, and automated reliability gates.
 
+> [!IMPORTANT]
+> **CROSS-SESSION PERSISTENCE MANDATE**:
+> In ANY new chat session or turn, the agent MUST immediately inspect [PROJECT_STATE.md](file:///c:/Users/katta/Desktop/Digital%20sale%20person/PROJECT_STATE.md) to resume the exact milestone, active branch, and immediate technical deliverables without asking the user to re-explain anything.
+
 ---
 
 ## 🏢 Executive Organizational Chart
