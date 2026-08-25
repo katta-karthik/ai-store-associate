@@ -14,28 +14,28 @@
 | **Milestone 3** | Dynamic Agent UI & Live Filter Synchronization (SSE + Next.js Store) | 🟢 **COMPLETED** | 🎨 Frontend & ⚡ Modernization |
 | **Milestone 4** | Interactive Cart & Wishlist Commerce Mutations | 🟢 **COMPLETED** | ⚙️ Backend & 🧪 QA |
 | **Milestone 5** | Persistent Shopper Memory across Sessions (`ShopperMemoryStore`) | 🟢 **COMPLETED** | ⚙️ Backend & 🔒 SecOps |
-| **Milestone 6** | Salesperson Behavior (Comparison, Critiques, Fit Recommendations) | 🟡 **IN PROGRESS** | 🧠 AI Eval & 🎨 Frontend |
-| **Milestone 7** | Deep Shopping Research Agent & Complex Intent Critique | ⚪ NOT STARTED | 🧠 AI Eval & 🏛️ Architecture |
+| **Milestone 6** | Salesperson Behavior (Comparison, Critiques, Fit Recommendations) | 🟢 **COMPLETED** | 🧠 AI Eval & 🎨 Frontend |
+| **Milestone 7** | Deep Shopping Research Agent & Complex Intent Critique | 🟡 **IN PROGRESS** | 🧠 AI Eval & 🏛️ Architecture |
 
 ---
 
-## 📌 Current Active Focus (Milestone 6: Salesperson Behavior, Comparison & Fit Engine)
+## 📌 Current Active Focus (Milestone 7: Deep Shopping Research Agent & Complex Intent Critique)
 
-* **Active Git Branch**: `feature/milestone-5-shopper-memory` ➔ Transitioning to `feature/milestone-6-salesperson-behavior`
+* **Active Git Branch**: `feature/milestone-6-salesperson-behavior` ➔ Transitioning to `feature/milestone-7-deep-research-agent`
 * **Remote Repository**: `https://github.com/katta-karthik/ai-store-associate.git`
-* **Milestone 5 Delivered**:
-  1. **Persistent Shopper Memory Graph**: `ShopperMemoryStore` (SQLite/async engine) storing shoe sizes, brand affinities, budget limits, injury notes, and past products.
-  2. **Automatic Signal Extraction**: Parses natural language turns and persists updated preferences (`agent_app/memory/extractor.py`).
-  3. **Memory-Injected LangGraph Workflow**: `memory_loader` node auto-injects preferences into search filters and personalized salesperson greetings.
-  4. **SecOps Rule 05 PII Sanitization**: Regex masking for card numbers and sensitive data before storage.
-  5. **Shopper Memory REST API**: `/api/v1/shopper/{id}/memory` (GET, POST, DELETE).
-  6. **21/21 Automated QA Tests Passing**.
+* **Milestone 6 Delivered**:
+  1. **Side-by-Side Product Comparison Engine**: `product_comparator_node` parses target shoe models, evaluates cushioning (Zoom Air vs Light BOOST), weight, heel-to-toe drop, and primary terrain.
+  2. **Interactive Visual Comparison Modal**: [ComparisonModal.tsx](file:///c:/Users/katta/Desktop/Digital%20sale%20person/store-frontend/components/ComparisonModal.tsx) in `store-frontend/` with spec matrix, fit advice, and one-click "Add to Bag" buttons.
+  3. **Sizing & Fit Advisory Intelligence**: Heuristic guidance advising half-size adjustments for snug athletic fits (e.g. Salomon trail footwear).
+  4. **Dynamic UI Action**: Dispatches `OPEN_COMPARISON_MODAL` via Server-Sent Events stream.
+  5. **23/23 Automated QA Tests Passing** across backend, memory, and comparison graph.
+  6. **Next.js Production Build Validated** with 0 errors.
 
-* **Milestone 6 Upcoming Deliverables**:
-  1. Side-by-side Product Comparison Node (Comparing cushioning, weight, drop, and outsole grip between shoes like Pegasus vs Ultraboost).
-  2. Interactive Visual Comparison Modal UI in `store-frontend/`.
-  3. Sizing & Fit Advisor Engine (e.g. recommending "half-size up" for snug Salomon trail shoes).
-  4. Cross-sell & bundle recommendation suggestions.
+* **Milestone 7 Upcoming Deliverables**:
+  1. Multi-Step Deep Research Agent: Complex shopper multi-criteria synthesis (*"Find the best shoe for a runner with flat feet training for a marathon under ₹12k who also runs on gravel trails on weekends"*).
+  2. Hierarchical Model Cascading (Fast Flash intent routing ➔ Pro reasoning for deep consultative trade-off evaluations).
+  3. Conversational Critic & Recommendation Confidence Scoring.
+  4. End-to-end Merchant Production Package & SDK Verification.
 
 ---
 
@@ -53,3 +53,4 @@
 * `v0.4.0-alpha`: Shipped Milestone 3 (Next.js 15 App Router Storefront, Embeddable AI Chat Widget, Live SSE Filter Sync, Multi-service Dockerfile).
 * `v0.5.0-alpha`: Shipped Milestone 4 (Conversational Cart & Wishlist Mutations, Slide-out Drawers, 19 Automated QA Tests).
 * `v0.6.0-alpha`: Shipped Milestone 5 (Persistent Shopper Memory Graph, PII Sanitization, Memory API, 21 Automated QA Tests).
+* `v0.7.0-alpha`: Shipped Milestone 6 (Side-by-Side Comparison Engine, Fit Advisory, Comparison Modal, 23 Automated QA Tests).

@@ -10,8 +10,7 @@ export const ChatWidget: React.FC = () => {
   const {
     isChatOpen,
     toggleChat,
-    toggleCart,
-    toggleWishlist,
+    setComparisonProducts,
     chatMessages,
     addChatMessage,
     updateLastAssistantMessage,
@@ -35,10 +34,10 @@ export const ChatWidget: React.FC = () => {
   }, [chatMessages]);
 
   const quickPrompts = [
+    '⚖️ Compare Pegasus vs Ultraboost',
     '👟 Road running shoes under ₹8k',
     '🛒 Add Nike Pegasus size 10 to cart',
-    '💖 Save Salomon Speedcross to wishlist',
-    '📦 Show what is in my cart',
+    '💖 Save Salomon to wishlist',
   ];
 
   const handleSendMessage = async (textToSend?: string) => {
@@ -99,6 +98,10 @@ export const ChatWidget: React.FC = () => {
                 setFilters(newFilters);
               } else if (actionObj.action === 'HIGHLIGHT_PRODUCTS') {
                 setHighlightedProducts(actionObj.payload.product_ids || []);
+              } else if (actionObj.action === 'OPEN_COMPARISON_MODAL') {
+                if (actionObj.payload.products) {
+                  setComparisonProducts(actionObj.payload.products);
+                }
               } else if (actionObj.action === 'SYNC_CART') {
                 fetchCart();
               } else if (actionObj.action === 'OPEN_CART_DRAWER') {
@@ -192,7 +195,7 @@ export const ChatWidget: React.FC = () => {
               ) : (
                 <div className="flex items-center gap-1.5 py-1 text-zinc-400">
                   <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
-                  <span>Processing shopping action...</span>
+                  <span>Analyzing shoes & preparing advice...</span>
                 </div>
               )}
               <span className="block text-[9px] text-zinc-500 text-right mt-1.5">{msg.timestamp}</span>
@@ -233,7 +236,7 @@ export const ChatWidget: React.FC = () => {
         >
           <input
             type="text"
-            placeholder="Ask to filter, add size 10 to cart, save to wishlist..."
+            placeholder="Ask to compare Pegasus vs Ultraboost, check sizing..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
             disabled={isStreaming}

@@ -70,6 +70,8 @@ interface StoreState {
   isLoading: boolean;
   filters: StoreFilters;
   highlightedProductIds: string[];
+  comparisonProducts: Product[];
+  isComparisonOpen: boolean;
   cart: {
     cart_id: string;
     items: CartItem[];
@@ -90,6 +92,8 @@ interface StoreState {
   // Actions
   setFilters: (newFilters: Partial<StoreFilters>) => void;
   setHighlightedProducts: (ids: string[]) => void;
+  setComparisonProducts: (products: Product[]) => void;
+  toggleComparisonModal: () => void;
   fetchProducts: () => Promise<void>;
   fetchCart: () => Promise<void>;
   addToCart: (productId: string, variantId: string) => Promise<void>;
@@ -118,6 +122,8 @@ export const useStore = create<StoreState>((set, get) => ({
     size: '',
   },
   highlightedProductIds: [],
+  comparisonProducts: [],
+  isComparisonOpen: false,
   cart: {
     cart_id: 'cart_shopper_session_001',
     items: [],
@@ -133,7 +139,7 @@ export const useStore = create<StoreState>((set, get) => ({
     {
       id: 'welcome_msg',
       role: 'assistant',
-      content: "👋 Hi! I'm your **ShopAgent AI Associate**. Ask me anything like *'I need road running shoes under ₹8k'* or *'Add Nike Pegasus in size 10 to my cart'*, and I'll take care of it for you!",
+      content: "👋 Hi! I'm your **ShopAgent AI Associate**. Ask me anything like *'Compare Pegasus vs Ultraboost'* or *'Add Nike Pegasus in size 10 to my cart'*, and I'll adapt the store for you!",
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     }
   ],
@@ -151,6 +157,14 @@ export const useStore = create<StoreState>((set, get) => ({
 
   setHighlightedProducts: (ids) => {
     set({ highlightedProductIds: ids });
+  },
+
+  setComparisonProducts: (products) => {
+    set({ comparisonProducts: products, isComparisonOpen: true });
+  },
+
+  toggleComparisonModal: () => {
+    set((state) => ({ isComparisonOpen: !state.isComparisonOpen }));
   },
 
   fetchProducts: async () => {

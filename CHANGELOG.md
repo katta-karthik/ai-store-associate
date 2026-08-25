@@ -7,15 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.7.0-alpha] - 2026-08-25
+
+### Added - Milestone 6: Salesperson Behavior (Comparison, Critiques & Fit Recommendations)
+- **Side-by-Side Product Comparison Engine**: Implemented `product_comparator_node` in `agent-backend/agent_app/graph/nodes/product_comparator.py` comparing shoe cushioning, weight, heel-to-toe drop, terrain, and price.
+- **Interactive Visual Comparison Modal**: Built `store-frontend/components/ComparisonModal.tsx` displaying structured spec tables and direct "Add to Bag" buttons.
+- **Sizing & Fit Advisory Intelligence**: Heuristic rules providing half-size recommendations for athletic fits (e.g. Salomon trail footwear).
+- **Dynamic UI Actions**: Dispatched `OPEN_COMPARISON_MODAL` with real-time SSE stream events.
+- **Automated QA & Evaluation Suite**: 23 automated tests passing across the repository.
+
+---
+
 ## [0.6.0-alpha] - 2026-08-25
 
 ### Added - Milestone 5: Persistent Shopper Memory Across Sessions
 - **Persistent Shopper Memory Graph**: Implemented `ShopperMemoryStore` with SQLite async engine in `agent-backend/agent_app/memory/shopper_memory.py`.
-- **Automatic Signal Extraction**: Real-time extraction of shoe size, brand affinities, category preferences, budget limits, and ergonomic injury notes in `agent_app/memory/extractor.py`.
+- **Automatic Signal Extraction**: Real-time extraction of shoe size, brand affinities, category preferences, budget limits, and ergonomic injury notes.
 - **Memory-Augmented LangGraph Workflow**: Inserted `memory_loader_node` at the workflow root to load, auto-inject, and persist shopper preferences across turns and sessions.
 - **SecOps Rule 05 PII Sanitization**: Integrated credit card number and email masking before memory writes.
-- **Shopper Memory REST API**: `GET`, `POST`, and `DELETE /api/v1/shopper/{id}/memory` for GDPR transparency and data control.
-- **Automated QA & Evaluation Suite**: 21 automated tests passing across the repository.
+- **Shopper Memory REST API**: `GET`, `POST`, and `DELETE /api/v1/shopper/{id}/memory`.
 
 ---
 
@@ -43,7 +53,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added - Milestone 2: LangGraph Agent Brain & Entity Extraction
 - **LangGraph State Graph Engine**: State graph topology with `router`, `search_extractor`, and `salesperson_responder`.
 - **Natural Language Parameter Extraction**: Price ceilings, shoe sizes, and categories.
-- **REST & Real-Time SSE Streaming Endpoints**: `POST /api/v1/chat/message` and `POST /api/v1/chat/stream`.
 
 ---
 
