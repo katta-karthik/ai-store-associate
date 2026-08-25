@@ -3,7 +3,7 @@
 import json
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.models.catalog import Category, Product, ProductVariant
+from store_app.models.catalog import Category, Product, ProductVariant
 
 CATEGORIES_DATA = [
     {

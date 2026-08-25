@@ -7,9 +7,9 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.core.database import get_db
-from app.models.catalog import Category, Product, ProductVariant
-from app.schemas.catalog import CategorySchema, ProductListResponse, ProductSchema, StandardResponse, VariantSchema
+from store_app.core.database import get_db
+from store_app.models.catalog import Category, Product, ProductVariant
+from store_app.schemas.catalog import CategorySchema, ProductListResponse, ProductSchema, StandardResponse, VariantSchema
 
 router = APIRouter(prefix="/products", tags=["Products"])
 

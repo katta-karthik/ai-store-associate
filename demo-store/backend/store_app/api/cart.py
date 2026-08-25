@@ -6,9 +6,9 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.core.database import get_db
-from app.models.catalog import Cart, CartItem, Product, ProductVariant
-from app.schemas.catalog import CartItemCreateSchema, CartItemSchema, CartSchema, StandardResponse
+from store_app.core.database import get_db
+from store_app.models.catalog import Cart, CartItem, Product, ProductVariant
+from store_app.schemas.catalog import CartItemCreateSchema, CartItemSchema, CartSchema, StandardResponse
 
 router = APIRouter(prefix="/cart", tags=["Cart"])
 
@@ -133,8 +133,8 @@ async def add_item_to_cart(
         db.add(new_item)
 
     await db.commit()
-    await db.refresh(cart)
-    # Reload cart with relations
+    db.expire_all()
+
     updated_cart = await _get_or_create_cart(cart_id, db)
     return StandardResponse(success=True, data=_format_cart(updated_cart).model_dump())
 

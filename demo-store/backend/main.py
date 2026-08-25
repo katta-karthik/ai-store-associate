@@ -14,11 +14,11 @@ from fastapi import FastAPI, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.api.cart import router as cart_router
-from app.api.products import router as products_router
-from app.core.config import settings
-from app.core.database import AsyncSessionLocal, Base, engine
-from app.seed.seed_data import seed_database
+from store_app.api.cart import router as cart_router
+from store_app.api.products import router as products_router
+from store_app.core.config import settings
+from store_app.core.database import AsyncSessionLocal, Base, engine
+from store_app.seed.seed_data import seed_database
 
 
 @asynccontextmanager
@@ -71,7 +71,6 @@ async def readiness_probe() -> JSONResponse:
     """Readiness probe to check if the database is accessible."""
     try:
         async with AsyncSessionLocal() as session:
-            # Simple query to verify database connection
             from sqlalchemy import text
             await session.execute(text("SELECT 1"))
         return JSONResponse(

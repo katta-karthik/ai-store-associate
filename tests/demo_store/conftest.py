@@ -14,11 +14,10 @@ import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-from app.core.database import Base, get_db
-from app.seed.seed_data import seed_database
+from store_app.core.database import Base, get_db
+from store_app.seed.seed_data import seed_database
 from main import app
 
-# Use isolated SQLite test database
 TEST_DB_URL = "sqlite+aiosqlite:///:memory:"
 
 test_engine = create_async_engine(TEST_DB_URL, echo=False)
