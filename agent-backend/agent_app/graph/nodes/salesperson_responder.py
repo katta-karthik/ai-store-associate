@@ -8,7 +8,20 @@ def salesperson_responder_node(state: ShopAgentState) -> Dict[str, Any]:
     """Generate in-store salesperson conversational response and dispatch UI control actions."""
     products = state.retrieved_products
     filters = state.extracted_filters
+    profile = state.shopper_profile
     ui_actions: List[UIAction] = []
+
+    # Memory personalization preamble
+    memory_notes = []
+    if profile:
+        if profile.preferred_size and not filters.size:
+            memory_notes.append(f"Size {profile.preferred_size}")
+        if profile.special_notes:
+            memory_notes.append(profile.special_notes[0])
+
+    personalization_prefix = ""
+    if memory_notes and state.intent == "product_search":
+        personalization_prefix = f"*(Personalized for your {', '.join(memory_notes)})* "
 
     # 1. If products found via search
     if state.intent == "product_search":
@@ -40,13 +53,13 @@ def salesperson_responder_node(state: ShopAgentState) -> Dict[str, Any]:
             if len(products) == 1:
                 p = products[0]
                 response_text = (
-                    f"I found the **{p['title']}** ({p['brand']}) for ₹{p['base_price']:,.0f}. "
+                    f"{personalization_prefix}I found the **{p['title']}** ({p['brand']}) for ₹{p['base_price']:,.0f}. "
                     f"{p['description']}"
                 )
             else:
                 top_items = ", ".join([f"**{p['title']}** (₹{p['base_price']:,.0f})" for p in products[:3]])
                 response_text = (
-                    f"I've updated your store filters and found **{len(products)} matching options** for you: {top_items}. "
+                    f"{personalization_prefix}I've updated your store filters and found **{len(products)} matching options** for you: {top_items}. "
                     f"Let me know if you want me to compare their cushioning or specs!"
                 )
 
@@ -55,10 +68,18 @@ def salesperson_responder_node(state: ShopAgentState) -> Dict[str, Any]:
     elif state.intent == "compare_products":
         response_text = "I'd be happy to compare those models for you! Which two shoes would you like to evaluate side-by-side?"
     else:
-        response_text = (
-            "Hello! I'm your AI Store Associate. I can search our catalog, apply live filters, "
-            "compare footwear specs, and manage your cart. What are you shopping for today?"
-        )
+        if profile and profile.preferred_brands:
+            brands_str = ", ".join(profile.preferred_brands)
+            response_text = (
+                f"Welcome back! I'm your AI Store Associate, and I remember you're interested in {brands_str} footwear"
+                + (f" in size {profile.preferred_size}" if profile.preferred_size else "")
+                + ". What can I help you find today?"
+            )
+        else:
+            response_text = (
+                "Hello! I'm your AI Store Associate. I can search our catalog, apply live filters, "
+                "compare footwear specs, and manage your cart. What are you shopping for today?"
+            )
 
     return {
         "final_response": response_text,

@@ -13,6 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from agent_app.api.chat import router as chat_router
+from agent_app.api.memory import router as memory_router
 from agent_app.core.config import settings
 
 app = FastAPI(
@@ -50,8 +51,9 @@ async def readiness_probe() -> JSONResponse:
     )
 
 
-# Mount Chat API Router
+# Mount Routers
 app.include_router(chat_router, prefix=settings.API_V1_PREFIX)
+app.include_router(memory_router, prefix=settings.API_V1_PREFIX)
 
 
 if __name__ == "__main__":

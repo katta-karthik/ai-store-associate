@@ -10,6 +10,7 @@ async def search_extractor_node(state: ShopAgentState) -> Dict[str, Any]:
     """Extract search parameters from user query and fetch matching products from Store API."""
     query_text = state.user_query.lower()
     filters = ExtractedFilters()
+    profile = state.shopper_profile
 
     # 1. Price extraction (e.g. "under 8000", "under 8k", "below 7500", "less than 8000")
     price_match = re.search(r'(?:under|below|less than|within)\s*(?:₹|rs\.?|inr)?\s*(\d+(?:\.\d+)?)\s*(k|thousand)?', query_text)
@@ -18,11 +19,17 @@ async def search_extractor_node(state: ShopAgentState) -> Dict[str, Any]:
         if price_match.group(2) in ["k", "thousand"]:
             val *= 1000
         filters.max_price = val
+    elif profile and profile.budget_max:
+        # Auto-apply remembered budget if query doesn't override
+        filters.max_price = profile.budget_max
 
     # 2. Size extraction (e.g. "size 10", "size 9", "uk 10", "us 10")
     size_match = re.search(r'(?:size|uk|us)\s*(\d+)', query_text)
     if size_match:
         filters.size = size_match.group(1)
+    elif profile and profile.preferred_size:
+        # Auto-apply remembered shoe size
+        filters.size = profile.preferred_size
 
     # 3. Brand extraction
     known_brands = ["nike", "adidas", "puma", "salomon"]
