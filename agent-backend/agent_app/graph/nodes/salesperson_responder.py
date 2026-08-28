@@ -1,12 +1,18 @@
-"""Charming Luxury Store Sales Boy Persona Node for ShopAgent LangGraph.
+"""Charming Luxury Store Sales Associate Persona Node for ShopAgent LangGraph v3.0.
 
 Imbued with irresistible retail charm, sweet flattering compliments ("Sir you look like a hero!"),
-persuasive deal-closing excitement, and real-time spatial avatar guidance.
+persuasive deal-closing excitement, real-time spatial avatar guidance, multi-turn conversational context,
+and live Google Gemini 2.5 Flash LLM intelligence.
 """
 
 from typing import Any, Dict, List
 import random
+import logging
 from agent_app.schemas.agent_state import ShopAgentState, UIAction
+from agent_app.core.llm_client import llm_client
+from agent_app.memory.conversation_store import conversation_store
+
+logger = logging.getLogger("shopagent.responder")
 
 HERO_SWEET_COMPLIMENTS = [
     "Sir, with this pair on your feet, you will look like an absolute movie superstar! Pure hero vibe, haha! 🔥👑",
@@ -24,29 +30,25 @@ PERSUASIVE_CLOSING_PITCHES = [
 ]
 
 
-def salesperson_responder_node(state: ShopAgentState) -> Dict[str, Any]:
-    """Generate charming, complimentary, sweet-talking sales boy responses with spatial UI actions."""
-    products = state.retrieved_products
+async def salesperson_responder_node(state: ShopAgentState) -> Dict[str, Any]:
+    """Generate charming, complimentary, sweet-talking sales associate responses with live Gemini 2.5 Flash and spatial UI actions."""
+    products = state.retrieved_products or []
     filters = state.extracted_filters
     profile = state.shopper_profile
     ui_actions: List[UIAction] = []
     emotion = "CHARMING_COMPLIMENT"
     focus_target_id = None
 
-    # Memory personalization preamble
-    memory_notes = []
-    if profile:
-        if profile.preferred_size and not filters.size:
-            memory_notes.append(f"UK {profile.preferred_size}")
-        if profile.special_notes:
-            memory_notes.append(profile.special_notes[0])
+    # Multi-turn history formatting
+    history_text = ""
+    if state.conversation_history:
+        history_text = conversation_store.format_history_for_llm(state.conversation_history, max_turns=6)
 
-    personalization_prefix = ""
-    if memory_notes and state.intent == "product_search":
-        personalization_prefix = f"*(Personalized for your {', '.join(memory_notes)} style)*\n\n"
+    # Personalization summary
+    profile_context = profile.get_personalization_context() if profile else ""
 
-    # 1. If products found via search
-    if state.intent == "product_search":
+    # 1. Product Search Intent
+    if state.intent in ("product_search", "follow_up", "gift_recommendation", "style_advice"):
         if not products:
             emotion = "ANALYTICAL"
             response_text = (
@@ -83,37 +85,60 @@ def salesperson_responder_node(state: ShopAgentState) -> Dict[str, Any]:
                 )
             )
 
-            # Fit note for snug athletic models
-            fit_tip = ""
-            has_salomon = any("salomon" in p["brand"].lower() for p in products)
-            if has_salomon and profile and profile.preferred_size:
+            # Try generating dynamic live response with Gemini 2.5 Flash
+            llm_text = None
+            if llm_client.is_available:
                 try:
-                    up_size = float(profile.preferred_size) + 0.5
-                    fit_tip = f"\n\n💡 **Your Sales Boy's Secret Tip**: Since you wear UK {profile.preferred_size}, I will get you a **UK {up_size:g}** so your feet feel like royalty in that snug upper!"
-                except ValueError:
-                    fit_tip = f"\n\n💡 **Your Sales Boy's Secret Tip**: Salomon has an athletic race fit, so I'll set you up with half a size up for maximum luxury comfort!"
+                    scores_dicts = [s.model_dump() for s in state.personalization_scores] if state.personalization_scores else []
+                    llm_text = await llm_client.generate_salesperson_response(
+                        user_query=state.user_query,
+                        retrieved_products=products,
+                        shopper_profile_context=profile_context,
+                        conversation_history=history_text,
+                        intent=state.intent,
+                        reflection_notes=state.reflection_notes,
+                        personalization_scores=scores_dicts,
+                    )
+                except Exception as e:
+                    logger.warning(f"LLM salesperson response generation failed: {e}")
 
-            hero_compliment = random.choice(HERO_SWEET_COMPLIMENTS)
-            closing_pitch = random.choice(PERSUASIVE_CLOSING_PITCHES)
-
-            # Formulate salesperson consultation text
-            if len(products) == 1:
-                p = products[0]
-                response_text = (
-                    f"{personalization_prefix}🔥 **{hero_compliment}**\n\n"
-                    f"Look at this masterpiece: **{p['title']}** ({p['brand']}) for just ₹{p['base_price']:,.0f}! "
-                    f"{p['description']}{fit_tip}\n\n"
-                    f"💬 *{closing_pitch}*"
-                )
+            if llm_text:
+                response_text = llm_text
             else:
-                top_p = products[0]
-                top_items = ", ".join([f"**{p['title']}** (₹{p['base_price']:,.0f})" for p in products[:3]])
-                response_text = (
-                    f"{personalization_prefix}✨ **{hero_compliment}**\n\n"
-                    f"Sir, I brought out the best shoes on our shelves for you: {top_items}!\n\n"
-                    f"My personal #1 recommendation for you is the **{top_p['title']}**—the premium cushioning and sleek finish make you look like a champion, haha!{fit_tip}\n\n"
-                    f"👉 *{closing_pitch}*"
-                )
+                # Rule-based fallback template
+                hero_compliment = random.choice(HERO_SWEET_COMPLIMENTS)
+                closing_pitch = random.choice(PERSUASIVE_CLOSING_PITCHES)
+
+                fit_tip = ""
+                has_salomon = any("salomon" in p["brand"].lower() for p in products)
+                if has_salomon and profile and profile.preferred_size:
+                    try:
+                        up_size = float(profile.preferred_size) + 0.5
+                        fit_tip = f"\n\n💡 **Your Sales Boy's Secret Tip**: Since you wear UK {profile.preferred_size}, I will get you a **UK {up_size:g}** so your feet feel like royalty in that snug upper!"
+                    except ValueError:
+                        fit_tip = f"\n\n💡 **Your Sales Boy's Secret Tip**: Salomon has an athletic race fit, so I'll set you up with half a size up for maximum luxury comfort!"
+
+                personalization_prefix = ""
+                if profile and profile.preferred_size and not filters.size:
+                    personalization_prefix = f"*(Personalized for your UK {profile.preferred_size} fit)*\n\n"
+
+                if len(products) == 1:
+                    p = products[0]
+                    response_text = (
+                        f"{personalization_prefix}🔥 **{hero_compliment}**\n\n"
+                        f"Look at this masterpiece: **{p['title']}** ({p['brand']}) for just ₹{p['base_price']:,.0f}! "
+                        f"{p['description']}{fit_tip}\n\n"
+                        f"💬 *{closing_pitch}*"
+                    )
+                else:
+                    top_p = products[0]
+                    top_items = ", ".join([f"**{p['title']}** (₹{p['base_price']:,.0f})" for p in products[:3]])
+                    response_text = (
+                        f"{personalization_prefix}✨ **{hero_compliment}**\n\n"
+                        f"Sir, I brought out the best shoes on our shelves for you: {top_items}!\n\n"
+                        f"My personal #1 recommendation for you is the **{top_p['title']}**—the premium cushioning and sleek finish make you look like a champion, haha!{fit_tip}\n\n"
+                        f"👉 *{closing_pitch}*"
+                    )
 
     elif state.intent == "cart_action":
         emotion = "CELEBRATING"
@@ -123,7 +148,22 @@ def salesperson_responder_node(state: ShopAgentState) -> Dict[str, Any]:
         response_text = "Let me put these side-by-side for you, Sir! Your sales boy will break down the cushioning, drop, and style so you get the absolute best deal in the store!"
     else:
         emotion = "CHARMING_COMPLIMENT"
-        if profile and profile.preferred_brands:
+        llm_text = None
+        if llm_client.is_available:
+            try:
+                llm_text = await llm_client.generate_salesperson_response(
+                    user_query=state.user_query,
+                    retrieved_products=products,
+                    shopper_profile_context=profile_context,
+                    conversation_history=history_text,
+                    intent=state.intent,
+                )
+            except Exception:
+                pass
+
+        if llm_text:
+            response_text = llm_text
+        elif profile and profile.preferred_brands:
             brands_str = ", ".join(profile.preferred_brands)
             response_text = (
                 f"Welcome back Sir! Always an honor to assist a customer with such great taste in {brands_str} footwear! "

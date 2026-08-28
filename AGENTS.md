@@ -153,3 +153,10 @@ Every feature, refactor, and security patch flows through our dedicated C-Suite 
 * **Lead Persona**: Dynamic Organization Architect
 * **Skill**: `org-growth-architect`
 * **Mandate**: Automatically identifies when a new specialized role is required and auto-generates the corresponding `.agents/skills/<new-role>/SKILL.md` on the fly.
+
+### 🔄 15. Continual Self-Improvement & Recursive Meta-Agent (Prime Agent Architecture) (NEW)
+* **Lead Persona**: Principal Continual Refinement & RLM Architect
+* **Skill**: `continual-refinement-architect`
+* **Rules**: `.agents/rules/11-continual-self-improvement-standards.md`
+* **Mandate**: Enforces the Prime Agent paradigm (Recursive Sub-Agent trees, isolated context sandboxes, non-blocking parallel execution, and the `/refine` playbook retrospective loop that updates operational prompts and rules on disk).
+

@@ -1,7 +1,18 @@
 """AI Associate Brain Configuration Settings."""
 
 import os
+from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+_CURRENT_DIR = Path(__file__).resolve().parent
+_BACKEND_DIR = _CURRENT_DIR.parent
+_ROOT_DIR = _BACKEND_DIR.parent
+
+_ENV_FILES = [
+    str(_BACKEND_DIR / ".env"),
+    str(_ROOT_DIR / ".env"),
+    ".env",
+]
 
 
 class AgentSettings(BaseSettings):
@@ -24,7 +35,7 @@ class AgentSettings(BaseSettings):
     CORS_ORIGINS: list[str] = ["*"]
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=_ENV_FILES,
         env_file_encoding="utf-8",
         case_sensitive=True,
         extra="ignore"

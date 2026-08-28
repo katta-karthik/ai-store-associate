@@ -1,4 +1,4 @@
-"""LangGraph State Schemas for ShopAgent."""
+"""LangGraph State Schemas for ShopAgent v3.0 — AI Hyper-Personalization Engine."""
 
 from typing import Annotated, Any, Dict, List, Optional
 from pydantic import BaseModel, ConfigDict, Field
@@ -13,9 +13,21 @@ class ExtractedFilters(BaseModel):
     max_price: Optional[float] = None
     brand: Optional[str] = None
     size: Optional[str] = None
+    color: Optional[str] = None
+    occasion: Optional[str] = None
+    use_case: Optional[str] = None
     specs_filter: Dict[str, Any] = Field(default_factory=dict)
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class ProductPersonalizationScore(BaseModel):
+    """Per-product AI personalization score with reasoning."""
+    product_id: str
+    score: float = 0.0  # 0.0–1.0
+    reasoning: str = ""
+    match_factors: List[str] = Field(default_factory=list)
+    concern_factors: List[str] = Field(default_factory=list)
 
 
 class UIAction(BaseModel):
@@ -44,22 +56,30 @@ class AgentResponseDTO(BaseModel):
     ui_actions: List[UIAction] = Field(default_factory=list)
     products: List[Dict[str, Any]] = Field(default_factory=list)
     shopper_profile: Optional[ShopperProfile] = None
+    reflection_notes: List[str] = Field(default_factory=list)
+    personalization_scores: List[ProductPersonalizationScore] = Field(default_factory=list)
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
 
 class ShopAgentState(BaseModel):
-    """LangGraph Graph State Model with Emotional Salesperson Dynamics."""
+    """LangGraph Graph State Model with AI Hyper-Personalization."""
     session_id: str = "default_session"
     shopper_id: str = "shopper_default"
     shopper_profile: Optional[ShopperProfile] = None
     user_query: str = ""
     messages: List[Dict[str, Any]] = Field(default_factory=list)
+    conversation_history: List[Dict[str, Any]] = Field(default_factory=list)
     intent: str = "general_chat"
+    intent_confidence: float = 1.0
     emotion: str = "HYPED"
     focus_target_id: Optional[str] = None
     extracted_filters: ExtractedFilters = Field(default_factory=ExtractedFilters)
     retrieved_products: List[Dict[str, Any]] = Field(default_factory=list)
+    personalization_scores: List[ProductPersonalizationScore] = Field(default_factory=list)
+    style_context: Optional[str] = None
+    follow_up_context: Optional[str] = None
     ui_actions: List[UIAction] = Field(default_factory=list)
+    reflection_notes: List[str] = Field(default_factory=list)
     final_response: str = ""
     confidence_score: float = 1.0
     error: Optional[str] = None

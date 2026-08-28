@@ -122,6 +122,46 @@ export const ResearchReportDrawer: React.FC<ResearchReportDrawerProps> = ({
               </div>
             )}
 
+            {/* 🌲 Specialized AI Sub-Agent Council Breakdown (Prime Architecture) */}
+            {report.subagent_council && report.subagent_council.length > 0 && (
+              <div className="space-y-3 pt-2">
+                <div className="flex items-center gap-2 text-xs font-extrabold text-indigo-300 uppercase tracking-wider">
+                  <ShieldCheck className="w-4 h-4 text-indigo-400" />
+                  <span>AI Specialist Council Evaluations</span>
+                </div>
+                <div className="space-y-2.5">
+                  {report.subagent_council.map((sub: any, idx: number) => (
+                    <div
+                      key={idx}
+                      className="p-3.5 rounded-2xl bg-zinc-900/60 border border-indigo-500/20 space-y-1.5 shadow-sm"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                          {sub.role_name}
+                        </span>
+                        <span className="px-2 py-0.5 rounded-md bg-indigo-500/20 text-[10px] font-extrabold text-indigo-300">
+                          {sub.confidence_score}% Conf.
+                        </span>
+                      </div>
+                      <p className="text-xs text-zinc-300 leading-relaxed italic">"{sub.verdict}"</p>
+                      {sub.badges && sub.badges.length > 0 && (
+                        <div className="flex flex-wrap gap-1 pt-1">
+                          {sub.badges.map((b: string, bIdx: number) => (
+                            <span
+                              key={bIdx}
+                              className="px-1.5 py-0.5 rounded bg-zinc-800 text-[9px] font-semibold text-zinc-400"
+                            >
+                              🏷️ {b}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Runner-Up Match Card */}
             {runner && (
               <div className="rounded-3xl p-5 border border-zinc-800 bg-zinc-900/40 space-y-3 shadow-lg">

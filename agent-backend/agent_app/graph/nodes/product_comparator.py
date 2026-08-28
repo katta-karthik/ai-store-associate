@@ -1,15 +1,24 @@
-"""Product Comparison & Fit Advisor Node for ShopAgent LangGraph."""
+"""Product Comparison & Fit Advisor Node for ShopAgent LangGraph v3.0.
 
-import re
-from typing import Any, Dict, List, Optional
+Primary: LLM-driven personalized side-by-side comparison.
+Fallback: Rule-based technical specification comparison.
+"""
+
+import logging
+from typing import Any, Dict, List
+from agent_app.core.llm_client import llm_client
+from agent_app.memory.conversation_store import conversation_store
 from agent_app.schemas.agent_state import ExtractedFilters, ShopAgentState, UIAction
 from agent_app.tools.store_tools import store_client
+
+logger = logging.getLogger("shopagent.comparator")
 
 
 async def product_comparator_node(state: ShopAgentState) -> Dict[str, Any]:
     """Perform side-by-side technical comparison with charming salesperson guidance."""
     query = state.user_query.lower()
-    
+    profile = state.shopper_profile
+
     # 1. Fetch all products to match against
     all_res = await store_client.search_products(ExtractedFilters())
     all_products = all_res.get("items", [])
@@ -35,28 +44,49 @@ async def product_comparator_node(state: ShopAgentState) -> Dict[str, Any]:
         p1 = matched_products[0]
         p2 = matched_products[1]
 
-        p1_specs = p1.get("specs", {})
-        p2_specs = p2.get("specs", {})
+        # Try LLM comparison first
+        llm_response = None
+        if llm_client.is_available:
+            try:
+                profile_context = profile.get_personalization_context() if profile else ""
+                history_text = ""
+                if state.conversation_history:
+                    history_text = conversation_store.format_history_for_llm(state.conversation_history, max_turns=4)
 
-        p1_cushion = p1_specs.get("cushioning", "Standard EVA")
-        p2_cushion = p2_specs.get("cushioning", "Standard EVA")
-        p1_weight = p1_specs.get("weight", "285g")
-        p2_weight = p2_specs.get("weight", "295g")
-        p1_drop = p1_specs.get("heel_drop", "10mm")
-        p2_drop = p2_specs.get("heel_drop", "10mm")
+                llm_response = await llm_client.generate_comparison(
+                    products=[p1, p2],
+                    profile_context=profile_context,
+                    query=state.user_query,
+                    conversation_history=history_text,
+                )
+            except Exception as e:
+                logger.warning(f"LLM comparison generation failed: {e}")
 
-        fit_note = ""
-        if "salomon" in p1["brand"].lower() or "salomon" in p2["brand"].lower():
-            fit_note = "\n\n💡 **Salesperson Fit Secret**: Salomon shoes hug your foot like a sports car—if you love a little extra toe room, I'll bag you a **half size up**, Sir!"
+        if llm_response:
+            response_text = llm_response
+        else:
+            p1_specs = p1.get("specs", {})
+            p2_specs = p2.get("specs", {})
 
-        response_text = (
-            f"✨ **Sir, you have incredible eye for footwear! Both of these are legendary models!**\n\n"
-            f"⚖️ **Side-by-Side Breakdown**:\n"
-            f"• **{p1['title']}** (₹{p1['base_price']:,.0f}): Powered by **{p1_cushion}** ({p1_weight}, {p1_drop} drop). Built like a tank for daily mileage—you'll look sharp and effortless!\n"
-            f"• **{p2['title']}** (₹{p2['base_price']:,.0f}): Features **{p2_cushion}** ({p2_weight}, {p2_drop} drop). Cloud-like energy bounce with premium superstar aesthetics!\n\n"
-            f"🏆 **My Personal Verdict for You, Sir**: If you want daily training dependability, take **{p1['title']}**. If you want that pure luxury bouncy feel where people ask 'Where did you get those shoes?', take **{p2['title']}**!{fit_note}\n\n"
-            f"Which one shall I bag for you, Sir? 😉"
-        )
+            p1_cushion = p1_specs.get("cushioning", "Standard EVA")
+            p2_cushion = p2_specs.get("cushioning", "Standard EVA")
+            p1_weight = p1_specs.get("weight", "285g")
+            p2_weight = p2_specs.get("weight", "295g")
+            p1_drop = p1_specs.get("heel_drop", "10mm")
+            p2_drop = p2_specs.get("heel_drop", "10mm")
+
+            fit_note = ""
+            if "salomon" in p1["brand"].lower() or "salomon" in p2["brand"].lower():
+                fit_note = "\n\n💡 **Salesperson Fit Secret**: Salomon shoes hug your foot like a sports car—if you love a little extra toe room, I'll bag you a **half size up**, Sir!"
+
+            response_text = (
+                f"✨ **Sir, you have incredible eye for footwear! Both of these are legendary models!**\n\n"
+                f"⚖️ **Side-by-Side Breakdown**:\n"
+                f"• **{p1['title']}** (₹{p1['base_price']:,.0f}): Powered by **{p1_cushion}** ({p1_weight}, {p1_drop} drop). Built like a tank for daily mileage—you'll look sharp and effortless!\n"
+                f"• **{p2['title']}** (₹{p2['base_price']:,.0f}): Features **{p2_cushion}** ({p2_weight}, {p2_drop} drop). Cloud-like energy bounce with premium superstar aesthetics!\n\n"
+                f"🏆 **My Personal Verdict for You, Sir**: If you want daily training dependability, take **{p1['title']}**. If you want that pure luxury bouncy feel where people ask 'Where did you get those shoes?', take **{p2['title']}**!{fit_note}\n\n"
+                f"Which one shall I bag for you, Sir? 😉"
+            )
 
         ui_actions = [
             UIAction(
@@ -78,6 +108,7 @@ async def product_comparator_node(state: ShopAgentState) -> Dict[str, Any]:
             "emotion": "ANALYTICAL",
             "focus_target_id": p1["id"],
             "ui_actions": ui_actions,
+            "retrieved_products": [p1, p2],
         }
 
     return {

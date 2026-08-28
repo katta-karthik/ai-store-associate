@@ -4,7 +4,7 @@
 
 ---
 
-## 🚦 Overall Roadmap & Milestone Status (v1.3.0 Universal Embed & Feed GA)
+## 🚦 Overall Roadmap & Milestone Status (v3.0.0 AI Hyper-Personalization Engine GA)
 
 | Milestone | Description | Status | Active Department |
 | :--- | :--- | :--- | :--- |
@@ -19,35 +19,30 @@
 | **v1.1.0 Enhancements** | Voice Shopping Mic, Interactive Size Pills, Session UUIDs & Shopify Adapter | 🟢 **COMPLETED** | 🎨 Frontend, 🏛️ Architecture & 🧠 AI Eval |
 | **v1.2.0 Decoupled Architecture** | Core Product (Brain + Store SDK + Web Widget SDK) vs Isolated Demo Sandbox | 🟢 **COMPLETED** | 🏛️ Product Architecture & ⚡ Modernization |
 | **v1.3.0 Universal Embed & Feeds** | 1-Line Shadow DOM Script (`shopagent.js`) + Catalog Feed Ingestion Adapter | 🟢 **COMPLETED** | 🎨 Frontend & 🏛️ Architecture |
+| **v2.0.0 Autonomous Commerce Engine** | LangGraph Self-Reflective Evaluator Loop, Express Checkout & E2E Browser Test | 🟢 **COMPLETED** | 👑 C-Suite, 🧠 AI Eval & 🧪 QA |
+| **v2.1.0 Zero-Block Omnibar & Personalization** | Non-Obstructive Bottom Omnibar HUD, Visible Shopper VIP Profile Ribbon & In-Card Badges | 🟢 **COMPLETED** | 🎨 Frontend & 🎯 Product CPO |
+| **v2.2.0 Zero-Footprint Intercom-Style FAB Widget** | Entire AI Associate UI collapsed to 56px FAB circle; no merchant page injection; Shadow DOM embed also redesigned | 🟢 **COMPLETED** | 🎨 Frontend & 🏛️ Architecture |
+| **v3.0.0 AI Hyper-Personalization Engine** | Structured AI Intent/Entity/Preference Engine, Multi-Turn Conversation Memory, AI Personalization Scoring & Biomechanics | 🟢 **COMPLETED** | 🧠 AI Eval & ⚙️ Backend |
+| **v3.1.0 Prime Agent Recursive Architecture** | Recursive Sub-Agent Council (Biomechanics, Price Hunter, Style DNA), Isolated Context Kernels, Continual Self-Refinement Harness (/refine) | 🟢 **COMPLETED** | 🔄 Continual Refinement & ⚙️ Backend |
 
 ---
 
-## 📌 Current State & Production Release (v1.3.0-GA)
+## 📌 Current State & Production Release (v3.1.0-Prime GA)
 
 * **Active Git Branch**: `main`
 * **Remote Repository**: `https://github.com/katta-karthik/ai-store-associate.git`
-* **Clean Decoupled Architecture**:
-  1. **Universal 1-Line Embed Script (`sdk/client-sdk/embed/shopagent.js`)**:
-     - 100% Zero-Crash Web Component with isolated Shadow DOM.
-     - Embeddable on ANY e-commerce store with 1 line: `<script src="shopagent.js" data-store-id="..." async></script>`.
-     - Event Bridge: Emits decoupled `shopagent:filter-change` and `shopagent:cart-sync` CustomEvents to the merchant page.
-  2. **Product Catalog Feed Adapter (`sdk/store-sdk/feed_adapter.py`)**:
-     - Ingests standard JSON/XML product feeds (`/products.json` or Google Merchant Feed) from Spring Boot, MERN, Django, or PHP stores with ZERO backend code required from the merchant.
-  3. **Core Product: AI Agent Brain (`agent-backend/`)**:
-     - Multi-Agent LangGraph Workflows (Search, Cart, Sizing Fit Advisor, Long-Term Memory, Side-by-Side Comparison, Deep Research).
-     - Standard Server-Sent Events (SSE) Real-Time Streaming endpoint (`/api/v1/chat/stream`).
-  4. **Core Product: Universal Store SDK & Connectors (`sdk/store-sdk/`)**:
-     - `UniversalStoreAdapter` ABC interface with typed Pydantic DTOs.
-     - `ShopifyStoreAdapter` GraphQL Storefront API client.
-     - `DemoStoreAdapter` REST client.
-     - `CatalogFeedAdapter` zero-backend JSON feed client.
-     - `adapter_factory.py` dynamic connector factory.
-  5. **Core Product: Client Web SDK & Embeddable Widget (`sdk/client-sdk/`)**:
-     - `<ShopAgentCompanion />`, `<ComparisonModal />`, `<ResearchReportDrawer />`.
-     - `useShopAgent` React hook with Web Speech API voice shopping mic.
-  6. **100% Automated QA & AI Evaluation Harness**:
-     - 29/29 automated tests passing (`tests/agent_brain/`, `tests/sdk/`, `tests/demo_store/`).
-     - `npm run build` in `demo-store/frontend` compiles with 0 TypeScript/lint errors.
+* **Antigravity Prime Recursive Architecture (`agent-backend/`)**:
+  1. **Recursive Sub-Agent Engine (`core/recursive_runner.py`)**:
+     - Programmatic parallel sub-agent spawning with isolated context sandboxes (Zero prompt bloat/leakage).
+     - Parallel 3-Agent Council: Biomechanics & Ergonomics Specialist, Value & Pricing Strategist, Style DNA & Aesthetic Critic.
+     - Recursive parent synthesis aggregating multi-agent verdicts into charismatic salesperson pitches.
+  2. **Continual Self-Refining Harness (`eval/self_refinement.py`)**:
+     - Trajectory retrospective logger and analyzer (`/refine` loop).
+     - Treats operational rules and skills as mutable state on disk.
+  3. **Department #15: Continual Self-Improvement & Recursive Meta-Agent**:
+     - Registered in `AGENTS.md`, backed by `.agents/rules/11-continual-self-improvement-standards.md` and `.agents/skills/continual-refinement-architect/SKILL.md`.
+  4. **100% Automated QA & Evaluation Harness**:
+     - 40/40 automated tests passing across the entire repository (`tests/demo_store/`, `tests/sdk/`, `tests/agent_brain/`).
 
 ---
 
@@ -64,3 +59,9 @@
 * `v1.1.0`: Shipped Voice Shopping Mic, Interactive Size Selectors, Dynamic Session UUIDs, Sizing Feedback Loops, and Shopify Storefront GraphQL Adapter.
 * `v1.2.0`: Decoupled Core Product (Agent Brain + Store SDK + Web Widget SDK) from isolated Demo Store Sandbox.
 * `v1.3.0`: Shipped Universal 1-Line Shadow DOM Embed Script (`shopagent.js`) & Zero-Backend Catalog Feed Adapter (`CatalogFeedAdapter`).
+* `v2.0.0`: Shipped LangGraph Deep Agent Reflection Loop (`reflection_evaluator_node`), Fixed Size Filter SQL Query, Added Express Checkout Flow & Order Confirmed Screens, and Automated Tests Green.
+* `v2.1.0`: Shipped Zero-Block Bottom Omnibar HUD, Visible Shopper VIP Profile Ribbon, In-Card Associate Recommendation Badges, and Dockable Right Side Lounge.
+* `v2.2.0`: Zero-Footprint Redesign — Replaced omnibar/ribbon/in-card badges with Intercom-style 56px FAB + compact corner chat panel. Merchant pages never touched.
+* `v3.0.0`: **AI Hyper-Personalization Engine** — Overhauled entire backend with structured Gemini LLM reasoning across intent classification, entity extraction, online preference learning, persistent multi-turn conversation memory, and per-product AI personalization scoring.
+* `v3.1.0`: **Prime Agent Recursive Architecture** — Shipped Recursive Sub-Agent Council (Biomechanics, Price, Style), isolated context sandboxes, non-blocking parallel execution, and the Continual Self-Refining `/refine` playbook engine.
+

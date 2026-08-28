@@ -1,8 +1,11 @@
 /**
  * ShopAgent Universal Standalone Web Component & Embed Script.
- * 
- * 100% Zero-Crash Spatial Sales Associate with Shadow DOM Encapsulation.
- * Works on ANY E-Commerce Platform (Shopify, MERN, Spring Boot, PHP, WooCommerce, Next.js, HTML).
+ *
+ * Zero-Footprint Intercom-Style AI Sales Associate.
+ * Shadow DOM Encapsulated — works on ANY E-Commerce Platform.
+ *
+ * DESIGN PRINCIPLE: The merchant's page is NEVER modified.
+ * Our entire footprint = one 56px FAB circle + expandable 360×480px chat panel.
  */
 
 (function () {
@@ -43,20 +46,19 @@
     constructor() {
       super();
       this.attachShadow({ mode: 'open' });
-      this.isExpanded = false;
+      this.isOpen = false;
       this.isStreaming = false;
       this.isListening = false;
       this.emotion = 'CHARMING_COMPLIMENT';
-      this.spatialTarget = null;
-      this.selectedSize = '10';
+      this.hasUnread = true;
+      this.showToast = true;
       this.messages = [
         {
           role: 'assistant',
-          content: "👋 Namaste Sir! I'm your **ShopAgent Sales Associate** walking beside you today! As you browse, I'll glide alongside each shoe and give you my honest hero review. Tell me what style you love or click 🎙️ to speak!",
+          content: "👋 Namaste Sir! I'm your **ShopAgent Sales Associate**. Tell me what style you love, your shoe size, or budget and I'll find the perfect pair!",
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         }
       ];
-      this.speechText = "👋 **Namaste Sir!** I'm your dedicated sales associate walking with you. Hover or tap any pair and I'll show you its hero features!";
       this.recognition = null;
     }
 
@@ -64,7 +66,11 @@
       this.initVoiceRecognition();
       this.render();
       this.bindEvents();
-      this.listenToProductInteractions();
+      // Auto-dismiss toast after 4 seconds
+      setTimeout(() => {
+        this.showToast = false;
+        this.updateToast();
+      }, 4000);
     }
 
     initVoiceRecognition() {
@@ -99,44 +105,15 @@
       }
     }
 
-    listenToProductInteractions() {
-      try {
-        window.addEventListener('mouseover', (e) => {
-          const card = e.target.closest('[data-product-id]');
-          if (card && !this.isExpanded) {
-            const prodId = card.getAttribute('data-product-id');
-            const title = card.getAttribute('data-product-title') || 'this shoe';
-            const price = card.getAttribute('data-product-price') || '';
-
-            const rect = card.getBoundingClientRect();
-            const viewportWidth = window.innerWidth;
-            const viewportHeight = window.innerHeight;
-
-            let dockLeft = rect.right + 16;
-            if (rect.right + 340 > viewportWidth) {
-              dockLeft = Math.max(16, rect.left - 340);
-            }
-
-            const dockTop = Math.max(80, Math.min(rect.top + 10, viewportHeight - 260));
-
-            this.spatialTarget = {
-              id: prodId,
-              title: title,
-              price: price,
-              top: dockTop,
-              left: dockLeft
-            };
-            this.emotion = 'HYPED';
-            this.speechText = `✨ Sir! Look at the **${title}**! In this pair, you will look 100% like a movie hero, haha! Shall I pack your size?`;
-            this.render();
-            this.bindEvents();
-          }
-        });
-      } catch (e) {}
-    }
-
     async sendMessage(query) {
       if (!query || this.isStreaming) return;
+
+      // Auto-open panel
+      if (!this.isOpen) {
+        this.isOpen = true;
+        this.render();
+        this.bindEvents();
+      }
 
       this.messages.push({
         role: 'user',
@@ -150,7 +127,6 @@
       });
 
       this.isStreaming = true;
-      this.speechText = "Analyzing our best pairs for you, Sir...";
       this.renderMessages();
 
       try {
@@ -190,26 +166,22 @@
             if (eventType === 'ui_action' && dataContent) {
               try {
                 const actionObj = JSON.parse(dataContent);
+                // Dispatch events for host page to optionally listen to
                 window.dispatchEvent(new CustomEvent('shopagent:action', { detail: actionObj }));
                 if (actionObj.action === 'SET_FILTERS') {
                   window.dispatchEvent(new CustomEvent('shopagent:filter-change', { detail: actionObj.payload }));
                 } else if (actionObj.action === 'SYNC_CART' || actionObj.action === 'OPEN_CART_DRAWER') {
                   window.dispatchEvent(new CustomEvent('shopagent:cart-sync', { detail: actionObj.payload }));
-                } else if (actionObj.action === 'AVATAR_GLIDE') {
-                  const targetCard = document.querySelector(`[data-product-id="${actionObj.payload.target_id}"]`);
-                  if (targetCard) {
-                    const rect = targetCard.getBoundingClientRect();
-                    this.spatialTarget = {
-                      id: actionObj.payload.target_id,
-                      title: targetCard.getAttribute('data-product-title') || 'Featured Hero',
-                      top: Math.max(80, rect.top + 10),
-                      left: Math.max(16, rect.right + 16)
-                    };
-                    this.render();
-                    this.bindEvents();
-                  }
                 }
               } catch (err) {}
+            } else if (eventType === 'emotion' && dataContent) {
+              try {
+                const emoObj = JSON.parse(dataContent);
+                if (emoObj.emotion) {
+                  this.emotion = emoObj.emotion;
+                  this.updateFabEmoji();
+                }
+              } catch {}
             } else if (eventType === 'token' && dataContent) {
               let tokenStr = '';
               try {
@@ -253,11 +225,21 @@
     updateVoiceButton() {
       const btn = this.shadowRoot.querySelector('#voice-btn');
       if (btn) {
-        if (this.isListening) {
-          btn.classList.add('listening');
-        } else {
-          btn.classList.remove('listening');
-        }
+        btn.className = this.isListening ? 'voice-btn listening' : 'voice-btn';
+      }
+    }
+
+    updateFabEmoji() {
+      const emoji = this.shadowRoot.querySelector('#fab-emoji');
+      if (emoji) {
+        emoji.textContent = this.getEmoji();
+      }
+    }
+
+    updateToast() {
+      const toast = this.shadowRoot.querySelector('.toast');
+      if (toast) {
+        toast.style.display = this.showToast && !this.isOpen ? 'block' : 'none';
       }
     }
 
@@ -266,11 +248,13 @@
       if (msgList && msgList.lastElementChild) {
         const textElem = msgList.lastElementChild.querySelector('.msg-text');
         if (textElem) {
-          textElem.innerHTML = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>');
+          textElem.innerHTML = text
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+            .replace(/\n/g, '<br/>');
         }
       }
-      const chatBody = this.shadowRoot.querySelector('.chat-messages');
-      if (chatBody) chatBody.scrollTop = chatBody.scrollHeight;
+      if (msgList) msgList.scrollTop = msgList.scrollHeight;
     }
 
     renderMessages() {
@@ -281,7 +265,10 @@
         <div class="message ${m.role}">
           ${m.role === 'assistant' ? '<div class="avatar-badge">✨</div>' : ''}
           <div class="bubble">
-            <div class="msg-text">${m.content ? m.content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>') : (this.isStreaming ? 'Thinking...' : '')}</div>
+            <div class="msg-text">${m.content
+              ? m.content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>').replace(/\n/g, '<br/>')
+              : (this.isStreaming ? '<span class="typing">Thinking...</span>' : '')
+            }</div>
             <div class="msg-time">${m.time}</div>
           </div>
         </div>
@@ -290,69 +277,44 @@
       msgContainer.scrollTop = msgContainer.scrollHeight;
     }
 
+    getEmoji() {
+      if (this.emotion === 'HYPED') return '🤩';
+      if (this.emotion === 'CELEBRATING') return '🎉';
+      if (this.emotion === 'ANALYTICAL') return '🔬';
+      return '👑';
+    }
+
     bindEvents() {
-      const toggleBtn = this.shadowRoot.querySelector('#toggle-btn');
-      if (toggleBtn) {
-        toggleBtn.onclick = () => {
-          this.isExpanded = !this.isExpanded;
-          this.spatialTarget = null;
+      // FAB toggle
+      const fab = this.shadowRoot.querySelector('#fab-btn');
+      if (fab) {
+        fab.onclick = () => {
+          this.isOpen = !this.isOpen;
+          this.hasUnread = false;
+          this.showToast = false;
           this.render();
           this.bindEvents();
+          if (this.isOpen) this.renderMessages();
         };
       }
 
+      // Close button inside panel
       const closeBtn = this.shadowRoot.querySelector('#close-btn');
       if (closeBtn) {
         closeBtn.onclick = () => {
-          this.isExpanded = false;
+          this.isOpen = false;
           this.render();
           this.bindEvents();
         };
       }
 
-      const closeSpatialBtn = this.shadowRoot.querySelector('#close-spatial-btn');
-      if (closeSpatialBtn) {
-        closeSpatialBtn.onclick = () => {
-          this.spatialTarget = null;
-          this.render();
-          this.bindEvents();
-        };
-      }
-
-      const sizeBtns = this.shadowRoot.querySelectorAll('.size-pill');
-      sizeBtns.forEach(btn => {
-        btn.onclick = () => {
-          this.selectedSize = btn.getAttribute('data-size') || '10';
-          this.render();
-          this.bindEvents();
-        };
-      });
-
-      const packBagBtn = this.shadowRoot.querySelector('#pack-bag-btn');
-      if (packBagBtn && this.spatialTarget) {
-        packBagBtn.onclick = () => {
-          window.dispatchEvent(new CustomEvent('shopagent:add-to-cart', {
-            detail: {
-              productId: this.spatialTarget.id,
-              variantId: `var_${this.spatialTarget.id}_${this.selectedSize}`,
-              quantity: 1
-            }
-          }));
-          packBagBtn.innerText = 'Packed in Your Bag! 🎉';
-          packBagBtn.style.background = '#10b981';
-          setTimeout(() => {
-            this.spatialTarget = null;
-            this.render();
-            this.bindEvents();
-          }, 1500);
-        };
-      }
-
+      // Voice
       const voiceBtn = this.shadowRoot.querySelector('#voice-btn');
       if (voiceBtn) {
         voiceBtn.onclick = () => this.toggleVoice();
       }
 
+      // Chat form
       const form = this.shadowRoot.querySelector('#chat-form');
       if (form) {
         form.onsubmit = (e) => {
@@ -365,8 +327,9 @@
         };
       }
 
-      const promptBtns = this.shadowRoot.querySelectorAll('.chip-btn');
-      promptBtns.forEach(btn => {
+      // Quick chips
+      const chips = this.shadowRoot.querySelectorAll('.chip-btn');
+      chips.forEach(btn => {
         btn.onclick = () => {
           const q = btn.getAttribute('data-query');
           if (q) this.sendMessage(q);
@@ -377,11 +340,7 @@
     render() {
       this.shadowRoot.innerHTML = `
         <style>
-          * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-          }
+          * { box-sizing: border-box; margin: 0; padding: 0; }
 
           :host {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -389,117 +348,8 @@
             -webkit-user-select: none;
           }
 
-          /* Spatial Floating Pitch Callout Attached to Product */
-          .spatial-box {
-            position: fixed;
-            z-index: 2147483646;
-            width: 320px;
-            background: rgba(9, 9, 11, 0.96);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(236, 72, 153, 0.45);
-            border-radius: 20px;
-            padding: 14px;
-            color: #ffffff;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6);
-            animation: popIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-          }
-
-          .spatial-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 8px;
-          }
-
-          .spatial-badge {
-            font-size: 10px;
-            font-weight: 800;
-            letter-spacing: 0.5px;
-            padding: 2px 8px;
-            border-radius: 20px;
-            background: linear-gradient(135deg, #ec4899, #6366f1);
-            color: #ffffff;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-          }
-
-          .close-mini-btn {
-            background: transparent;
-            border: none;
-            color: #a1a1aa;
-            font-size: 14px;
-            cursor: pointer;
-          }
-
-          .spatial-quote {
-            font-size: 12px;
-            line-height: 1.45;
-            color: #f4f4f5;
-            border-left: 2px solid #6366f1;
-            padding-left: 8px;
-            margin-bottom: 10px;
-          }
-
-          .size-row {
-            background: rgba(24, 24, 27, 0.8);
-            border-radius: 12px;
-            padding: 8px;
-            margin-bottom: 10px;
-          }
-
-          .size-label {
-            font-size: 10px;
-            color: #a1a1aa;
-            margin-bottom: 6px;
-            display: flex;
-            justify-content: space-between;
-          }
-
-          .size-pills {
-            display: flex;
-            gap: 6px;
-          }
-
-          .size-pill {
-            flex: 1;
-            padding: 4px;
-            font-size: 11px;
-            font-weight: 700;
-            background: #27272a;
-            border: 1px solid #3f3f46;
-            color: #ffffff;
-            border-radius: 6px;
-            cursor: pointer;
-            text-align: center;
-          }
-
-          .size-pill.active {
-            background: #4f46e5;
-            border-color: #818cf8;
-            box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
-          }
-
-          .pack-btn {
-            width: 100%;
-            padding: 9px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 700;
-            background: linear-gradient(135deg, #4f46e5, #ec4899);
-            border: none;
-            color: #ffffff;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
-            transition: transform 0.2s;
-          }
-
-          .pack-btn:hover {
-            transform: scale(1.02);
-          }
-
-          /* Bottom Right Dock */
-          .dock-container {
+          /* ── Container: fixed bottom-right, out of document flow ── */
+          .widget-root {
             position: fixed;
             bottom: 24px;
             right: 24px;
@@ -507,106 +357,25 @@
             display: flex;
             flex-direction: column;
             align-items: flex-end;
+            gap: 12px;
           }
 
-          .idle-bubble {
-            max-width: 300px;
-            background: rgba(9, 9, 11, 0.95);
-            backdrop-filter: blur(16px);
-            border: 1px solid rgba(99, 102, 241, 0.35);
-            border-radius: 18px;
-            padding: 12px 14px;
-            color: #ffffff;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-            margin-bottom: 12px;
-            position: relative;
-            animation: fadeIn 0.3s ease;
-          }
-
-          .idle-bubble-header {
-            font-size: 11px;
-            font-weight: 700;
-            color: #818cf8;
-            margin-bottom: 4px;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-          }
-
-          .idle-bubble-text {
-            font-size: 12px;
-            color: #e4e4e7;
-            line-height: 1.4;
-          }
-
-          .idle-bubble::after {
-            content: '';
-            position: absolute;
-            bottom: -6px;
-            right: 28px;
-            width: 12px;
-            height: 12px;
-            background: rgba(9, 9, 11, 0.95);
-            border-right: 1px solid rgba(99, 102, 241, 0.35);
-            border-bottom: 1px solid rgba(99, 102, 241, 0.35);
-            transform: rotate(45deg);
-          }
-
-          .launcher-btn {
-            width: 58px;
-            height: 58px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #6366f1, #a855f7, #ec4899);
-            padding: 2px;
-            cursor: pointer;
-            border: none;
-            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.45);
-            transition: transform 0.2s;
-          }
-
-          .launcher-btn:hover {
-            transform: scale(1.06);
-          }
-
-          .launcher-inner {
-            width: 100%;
-            height: 100%;
-            background: #09090b;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            font-size: 24px;
-          }
-
-          .live-dot {
-            position: absolute;
-            top: 4px;
-            right: 4px;
-            width: 10px;
-            height: 10px;
-            background: #10b981;
-            border-radius: 50%;
-            border: 2px solid #09090b;
-          }
-
-          /* Full Chat Drawer */
-          .chat-drawer {
+          /* ── Expandable Chat Panel ── */
+          .chat-panel {
             width: 360px;
             height: 480px;
             background: rgba(9, 9, 11, 0.98);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(99, 102, 241, 0.35);
+            backdrop-filter: blur(24px);
+            border: 1px solid #27272a;
             border-radius: 20px;
             box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6);
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            margin-bottom: 12px;
+            animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
           }
 
-          .chat-header {
+          .panel-header {
             padding: 12px 16px;
             background: rgba(24, 24, 27, 0.7);
             border-bottom: 1px solid #27272a;
@@ -615,92 +384,131 @@
             justify-content: space-between;
           }
 
-          .chat-title {
-            font-size: 13px;
-            font-weight: 700;
-            color: #ffffff;
-          }
-
-          .chat-subtitle {
-            font-size: 10px;
-            color: #a1a1aa;
-          }
-
-          .close-btn {
-            background: transparent;
-            border: none;
-            color: #a1a1aa;
-            cursor: pointer;
-            font-size: 16px;
-          }
-
-          .chat-messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 14px;
+          .header-left {
             display: flex;
-            flex-direction: column;
-            gap: 12px;
+            align-items: center;
+            gap: 10px;
           }
 
-          .message {
-            display: flex;
-            gap: 8px;
-            max-width: 85%;
-          }
-
-          .message.user {
-            align-self: flex-end;
-          }
-
-          .message.assistant {
-            align-self: flex-start;
-          }
-
-          .avatar-badge {
-            width: 22px;
-            height: 22px;
+          .header-avatar {
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
-            background: rgba(99, 102, 241, 0.25);
+            background: linear-gradient(135deg, #6366f1, #ec4899);
+            padding: 2px;
+            flex-shrink: 0;
+          }
+
+          .header-avatar-inner {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: #09090b;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 11px;
+            font-size: 14px;
+          }
+
+          .header-title { font-size: 13px; font-weight: 700; color: #fff; }
+          .header-subtitle { font-size: 10px; color: #a1a1aa; display: flex; align-items: center; gap: 4px; }
+          .online-dot { width: 5px; height: 5px; border-radius: 50%; background: #10b981; display: inline-block; }
+
+          .close-btn {
+            background: #18181b;
+            border: 1px solid #27272a;
+            color: #a1a1aa;
+            cursor: pointer;
+            font-size: 14px;
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          .close-btn:hover { color: #fff; background: #27272a; }
+
+          /* Personalization strip inside panel */
+          .prefs-strip {
+            padding: 6px 12px;
+            border-bottom: 1px solid rgba(39, 39, 42, 0.5);
+            background: rgba(24, 24, 27, 0.4);
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+          }
+          .prefs-strip::-webkit-scrollbar { display: none; }
+
+          .pref-badge {
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 600;
+            white-space: nowrap;
+            flex-shrink: 0;
+          }
+
+          .pref-size { background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.2); color: #a5b4fc; }
+          .pref-budget { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); color: #6ee7b7; }
+          .pref-brand { background: rgba(236, 72, 153, 0.1); border: 1px solid rgba(236, 72, 153, 0.2); color: #f9a8d4; }
+
+          /* Chat messages */
+          .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            scrollbar-width: thin;
+            scrollbar-color: #27272a transparent;
+          }
+
+          .message { display: flex; gap: 8px; max-width: 88%; }
+          .message.user { align-self: flex-end; }
+          .message.assistant { align-self: flex-start; }
+
+          .avatar-badge {
+            width: 20px; height: 20px; border-radius: 50%;
+            background: rgba(99, 102, 241, 0.2);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 10px; flex-shrink: 0; margin-top: 2px;
           }
 
           .bubble {
-            padding: 9px 13px;
+            padding: 8px 12px;
             border-radius: 14px;
             font-size: 12px;
-            line-height: 1.4;
+            line-height: 1.45;
           }
 
           .message.user .bubble {
             background: #4f46e5;
-            color: #ffffff;
+            color: #fff;
+            border-bottom-right-radius: 4px;
           }
 
           .message.assistant .bubble {
             background: #18181b;
             border: 1px solid #27272a;
             color: #e4e4e7;
+            border-bottom-left-radius: 4px;
           }
 
-          .msg-time {
-            font-size: 9px;
-            color: #71717a;
-            margin-top: 4px;
-            text-align: right;
-          }
+          .msg-time { font-size: 9px; color: #71717a; margin-top: 3px; text-align: right; }
+          .typing { color: #71717a; font-style: italic; }
 
+          /* Quick suggestion chips */
           .chips-row {
-            padding: 6px 12px;
+            padding: 6px 10px;
             display: flex;
             gap: 6px;
             overflow-x: auto;
             border-top: 1px solid #27272a;
             background: #121215;
           }
+          .chips-row::-webkit-scrollbar { display: none; }
 
           .chip-btn {
             white-space: nowrap;
@@ -708,12 +516,16 @@
             border-radius: 20px;
             background: #18181b;
             border: 1px solid #3f3f46;
-            color: #d4d4d8;
-            font-size: 11px;
+            color: #a1a1aa;
+            font-size: 10px;
             cursor: pointer;
+            flex-shrink: 0;
+            transition: all 0.15s;
           }
+          .chip-btn:hover { color: #fff; border-color: #6366f1; }
 
-          .chat-input-bar {
+          /* Input bar */
+          .input-bar {
             padding: 10px 12px;
             border-top: 1px solid #27272a;
             display: flex;
@@ -724,16 +536,19 @@
           .voice-btn {
             background: #18181b;
             border: 1px solid #3f3f46;
-            color: #e4e4e7;
+            color: #a1a1aa;
             padding: 8px 10px;
             border-radius: 10px;
             cursor: pointer;
+            flex-shrink: 0;
+            transition: all 0.15s;
           }
-
+          .voice-btn:hover { color: #fff; }
           .voice-btn.listening {
-            background: rgba(239, 68, 68, 0.3);
+            background: rgba(239, 68, 68, 0.2);
             border-color: #ef4444;
             color: #ef4444;
+            animation: pulse 1.5s infinite;
           }
 
           .input-field {
@@ -742,111 +557,185 @@
             border: 1px solid #3f3f46;
             border-radius: 10px;
             padding: 8px 12px;
-            color: #ffffff;
+            color: #fff;
             font-size: 12px;
             outline: none;
+            transition: border-color 0.15s;
           }
+          .input-field:focus { border-color: #6366f1; }
 
           .send-btn {
             background: #4f46e5;
             border: none;
-            color: #ffffff;
+            color: #fff;
             padding: 8px 12px;
             border-radius: 10px;
             cursor: pointer;
             font-weight: 600;
             font-size: 12px;
+            flex-shrink: 0;
+            transition: background 0.15s;
+          }
+          .send-btn:hover { background: #4338ca; }
+
+          /* ── Auto-Dismiss Toast ── */
+          .toast {
+            max-width: 220px;
+            padding: 8px 12px;
+            border-radius: 12px;
+            background: rgba(9, 9, 11, 0.95);
+            backdrop-filter: blur(12px);
+            border: 1px solid #27272a;
+            color: #e4e4e7;
+            font-size: 11px;
+            line-height: 1.4;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+            cursor: pointer;
+            animation: fadeIn 0.3s ease;
+          }
+          .toast-label {
+            font-size: 10px;
+            font-weight: 700;
+            color: #818cf8;
+            margin-bottom: 2px;
           }
 
-          @keyframes popIn {
-            from { opacity: 0; transform: scale(0.92) translateY(10px); }
-            to { opacity: 1; transform: scale(1) translateY(0); }
+          /* ── FAB Launcher ── */
+          .fab-btn {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6366f1, #a855f7, #ec4899);
+            padding: 2px;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+            transition: transform 0.2s;
+            position: relative;
+          }
+          .fab-btn:hover { transform: scale(1.06); }
+          .fab-btn:active { transform: scale(0.95); }
+
+          .fab-inner {
+            width: 100%;
+            height: 100%;
+            background: #09090b;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+          }
+
+          .live-dot {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 12px;
+            height: 12px;
+            background: #10b981;
+            border-radius: 50%;
+            border: 2.5px solid #09090b;
+            animation: pulse 2s infinite;
+          }
+
+          .unread-badge {
+            position: absolute;
+            top: -4px;
+            left: -4px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #ef4444;
+            color: #fff;
+            font-size: 10px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2.5px solid #09090b;
+          }
+
+          @keyframes slideUp {
+            from { opacity: 0; transform: translateY(16px) scale(0.96); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
           }
 
           @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(6px); }
+            from { opacity: 0; transform: translateY(4px); }
             to { opacity: 1; transform: translateY(0); }
+          }
+
+          @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
           }
         </style>
 
-        ${this.spatialTarget && !this.isExpanded ? `
-          <div class="spatial-box" style="top: ${this.spatialTarget.top}px; left: ${this.spatialTarget.left}px;">
-            <div class="spatial-header">
-              <div class="spatial-badge">
-                <span>🤩</span>
-                <span>HERO PITCH</span>
-              </div>
-              <button class="close-mini-btn" id="close-spatial-btn">✕</button>
-            </div>
-            <div class="spatial-quote">
-              ${this.speechText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}
-            </div>
-            <div class="size-row">
-              <div class="size-label">
-                <span>Select UK Size:</span>
-                <span style="color:#818cf8; font-weight:700;">Size UK ${this.selectedSize}</span>
-              </div>
-              <div class="size-pills">
-                ${['8', '9', '10', '11'].map(sz => `
-                  <button class="size-pill ${this.selectedSize === sz ? 'active' : ''}" data-size="${sz}">
-                    ${sz === '10' ? `⭐ ${sz}` : sz}
-                  </button>
-                `).join('')}
-              </div>
-            </div>
-            <button class="pack-btn" id="pack-bag-btn">
-              🛍️ Pack in my Bag (Size UK ${this.selectedSize})
-            </button>
-          </div>
-        ` : ''}
-
-        <div class="dock-container">
-          ${!this.spatialTarget && !this.isExpanded ? `
-            <div class="idle-bubble">
-              <div class="idle-bubble-header">
-                <span>✨ ShopAgent Walkalong Associate</span>
-              </div>
-              <div class="idle-bubble-text">
-                ${this.speechText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}
-              </div>
-            </div>
-          ` : ''}
-
-          ${this.isExpanded ? `
-            <div class="chat-drawer">
-              <div class="chat-header">
-                <div>
-                  <div class="chat-title">✨ ShopAgent Associate</div>
-                  <div class="chat-subtitle">Walkalong Retail Specialist</div>
+        <div class="widget-root">
+          ${this.isOpen ? `
+            <div class="chat-panel">
+              <!-- Header -->
+              <div class="panel-header">
+                <div class="header-left">
+                  <div class="header-avatar">
+                    <div class="header-avatar-inner">${this.getEmoji()}</div>
+                  </div>
+                  <div>
+                    <div class="header-title">AI Sales Associate</div>
+                    <div class="header-subtitle">
+                      <span class="online-dot"></span>
+                      Online · Remembers your preferences
+                    </div>
+                  </div>
                 </div>
                 <button class="close-btn" id="close-btn">✕</button>
               </div>
 
-              <div class="chat-messages"></div>
-
-              <div class="chips-row">
-                <button class="chip-btn" data-query="Show marathon road shoes under 10000">🏃 Marathon Shoes</button>
-                <button class="chip-btn" data-query="Compare Pegasus vs Ultraboost">⚖️ Compare Pairs</button>
+              <!-- Personalization inside panel -->
+              <div class="prefs-strip">
+                <span class="pref-badge pref-size">👟 UK 10</span>
+                <span class="pref-badge pref-budget">💰 &lt;₹8K</span>
+                <span class="pref-badge pref-brand">🏷️ Nike</span>
               </div>
 
-              <form class="chat-input-bar" id="chat-form">
-                <button type="button" class="voice-btn" id="voice-btn" title="Voice Input">🎙️</button>
-                <input type="text" class="input-field" id="chat-input" placeholder="Ask or speak..." autocomplete="off" />
+              <!-- Messages -->
+              <div class="chat-messages"></div>
+
+              <!-- Quick chips -->
+              <div class="chips-row">
+                <button class="chip-btn" data-query="Show running shoes under 8000 in size 10">🏃 Running &lt;₹8K</button>
+                <button class="chip-btn" data-query="Compare Pegasus vs Ultraboost">⚖️ Compare</button>
+                <button class="chip-btn" data-query="What's best for wide feet?">👣 Wide Feet</button>
+              </div>
+
+              <!-- Input -->
+              <form class="input-bar" id="chat-form">
+                <button type="button" class="voice-btn" id="voice-btn">🎙️</button>
+                <input type="text" class="input-field" id="chat-input" placeholder="Ask about shoes, sizing, deals..." autocomplete="off" />
                 <button type="submit" class="send-btn">Send</button>
               </form>
             </div>
           ` : ''}
 
-          <button class="launcher-btn" id="toggle-btn" aria-label="Open ShopAgent">
-            <div class="launcher-inner">
-              <span>${this.emotion === 'HYPED' ? '🤩' : this.emotion === 'CELEBRATING' ? '🎉' : '✨'}</span>
-              <div class="live-dot"></div>
+          ${this.showToast && !this.isOpen ? `
+            <div class="toast" id="toast-msg">
+              <div class="toast-label">✨ ShopAgent</div>
+              👋 Hi! I'm your AI sales associate. Ask me anything!
             </div>
+          ` : ''}
+
+          <button class="fab-btn" id="fab-btn" aria-label="${this.isOpen ? 'Close' : 'Open'} ShopAgent">
+            <div class="fab-inner">
+              <span id="fab-emoji">${this.isOpen ? '✕' : this.getEmoji()}</span>
+            </div>
+            <div class="live-dot"></div>
+            ${this.hasUnread && !this.isOpen ? '<div class="unread-badge">1</div>' : ''}
           </button>
         </div>
       `;
 
-      if (this.isExpanded) {
+      if (this.isOpen) {
         this.renderMessages();
       }
     }

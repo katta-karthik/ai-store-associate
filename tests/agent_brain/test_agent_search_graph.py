@@ -38,7 +38,8 @@ async def test_agent_graph_general_greeting():
     result = await shopagent_app.ainvoke(state)
 
     assert result["intent"] == "general_chat"
-    assert "walking with you" in result["final_response"].lower() or "sales" in result["final_response"].lower()
+    response_lower = result["final_response"].lower()
+    assert any(term in response_lower for term in ["shopping", "shoe", "sales", "boutique", "guide", "stylist", "welcome", "help"])
     assert len(result["ui_actions"]) == 0
 
 

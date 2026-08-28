@@ -1,12 +1,25 @@
-"""Multi-Constraint Deep Shopping Research & Recommendation Critic Node."""
+"""Multi-Constraint Deep Shopping Research & Recursive Sub-Agent Council Node v3.1 (Prime Agent RLM Architecture).
 
+Executes parallel isolated sub-agents:
+1. Biomechanics & Ergonomics Specialist Sub-Agent
+2. Value & Pricing Optimization Sub-Agent
+3. Style DNA & Aesthetic Critic Sub-Agent
+Then recursively synthesizes their findings into an authoritative salesperson recommendation.
+"""
+
+import logging
 from typing import Any, Dict, List, Optional
+from agent_app.core.llm_client import llm_client
+from agent_app.core.recursive_runner import SubAgentTask, recursive_runner
+from agent_app.memory.conversation_store import conversation_store
 from agent_app.schemas.agent_state import ExtractedFilters, ShopAgentState, UIAction
 from agent_app.tools.store_tools import store_client
 
+logger = logging.getLogger("shopagent.deep_research")
+
 
 def _score_product_fit(product: Dict[str, Any], query: str, profile_notes: List[str]) -> Dict[str, Any]:
-    """Score a product against complex constraints and compute fit confidence."""
+    """Score a product against complex constraints and compute fit confidence (rule fallback)."""
     score = 78
     pros = []
     tradeoffs = []
@@ -15,12 +28,11 @@ def _score_product_fit(product: Dict[str, Any], query: str, profile_notes: List[
     title = product.get("title", "").lower()
     desc = product.get("description", "").lower()
     brand = product.get("brand", "").lower()
-    specs = product.get("specs", {})
     price = product.get("base_price", 0)
 
     # 1. Biomechanics / Cushioning
-    if any(k in query for k in ["flat feet", "overpronation", "knee pain", "cushion", "joint"]):
-        if "zoom" in desc or "boost" in desc or "air" in desc or "cushion" in desc:
+    if any(k in query for k in ["flat feet", "overpronation", "knee pain", "cushion", "joint", "plantar"]):
+        if "zoom" in desc or "boost" in desc or "air" in desc or "cushion" in desc or "react" in desc:
             score += 16
             pros.append("Maximum shock absorption protects joints and flat arches effortlessly")
             badges.append("High Impact Cushioning")
@@ -60,7 +72,7 @@ def _score_product_fit(product: Dict[str, Any], query: str, profile_notes: List[
 
 
 async def deep_research_node(state: ShopAgentState) -> Dict[str, Any]:
-    """Execute multi-phase deep research analysis with charming salesperson guidance."""
+    """Execute multi-phase deep research analysis powered by recursive sub-agents."""
     query = state.user_query.lower()
     profile = state.shopper_profile
     profile_notes = profile.special_notes if profile else []
@@ -86,28 +98,48 @@ async def deep_research_node(state: ShopAgentState) -> Dict[str, Any]:
     top_p, top_eval = top_candidates[0]
     runner_p, runner_eval = top_candidates[1] if len(top_candidates) > 1 else (None, None)
 
-    report_lines = [
-        f"👑 **Sir, I personally ran a deep biomechanical evaluation across our entire collection for you!**\n",
-        f"🏆 **Your Absolute #1 Hero Match: {top_p['title']}** ({top_eval['match_score']}% Match — ₹{top_p['base_price']:,.0f})",
-        f"• **Why it's perfect for you**: {', '.join(top_eval['pros']) if top_eval['pros'] else 'Balanced all-around performance.'}",
+    # 🌲 Spawn Recursive Sub-Agent Council for Top Match (Prime Agent Architecture)
+    council_tasks = [
+        SubAgentTask(
+            subagent_id=f"subagent_biomech_{top_p['id']}",
+            role_name="🔬 Biomechanics & Ergonomics Specialist",
+            specialty="Biomechanics, impact dispersion, gait stability, and joint cushioning",
+            objective="Evaluate the midsole cushioning, arch support, and joint protection for the shopper.",
+            context_slice={"product": top_p, "query": state.user_query, "profile_notes": profile_notes},
+        ),
+        SubAgentTask(
+            subagent_id=f"subagent_value_{top_p['id']}",
+            role_name="💰 Value & Pricing Strategist",
+            specialty="Cost-per-mile efficiency, build durability, and luxury ROI",
+            objective="Evaluate whether the price point matches build quality and durability expectations.",
+            context_slice={"product": top_p, "query": state.user_query, "profile_notes": profile_notes},
+        ),
+        SubAgentTask(
+            subagent_id=f"subagent_style_{top_p['id']}",
+            role_name="🎨 Style DNA & Aesthetic Critic",
+            specialty="Silhouette design, streetwear versatility, and colorway coordination",
+            objective="Assess aesthetic alignment with modern street and athletic styling.",
+            context_slice={"product": top_p, "query": state.user_query, "profile_notes": profile_notes},
+        ),
     ]
 
-    if top_eval["tradeoffs"]:
-        report_lines.append(f"• **Salesperson Note**: {', '.join(top_eval['tradeoffs'])}")
+    # Execute council in parallel
+    council_results = await recursive_runner.execute_parallel_council(council_tasks)
 
-    if runner_p and runner_eval:
-        report_lines.append(
-            f"\n🥈 **Alternative Luxury Runner-Up: {runner_p['title']}** ({runner_eval['match_score']}% Match — ₹{runner_p['base_price']:,.0f})\n"
-            f"• **Why consider**: {', '.join(runner_eval['pros']) if runner_eval['pros'] else 'Strong secondary choice.'}"
-        )
-        if runner_eval["tradeoffs"]:
-            report_lines.append(f"• **Salesperson Note**: {', '.join(runner_eval['tradeoffs'])}")
-
-    report_lines.append(
-        f"\n🔥 **My Expert Recommendation**: Sir, you will glide like a champion in the **{top_p['title']}**! Shall I pack this pair in your bag right now? 😉"
+    # Recursively synthesize results
+    profile_summary = profile.get_personalization_context() if profile else ""
+    synthesized_pitch = await recursive_runner.recursive_synthesize(
+        headline_goal=state.user_query,
+        council_results=council_results,
+        shopper_profile_summary=profile_summary,
     )
 
-    final_text = "\n".join(report_lines)
+    # Top eval augmented with council badges
+    all_council_badges = []
+    for r in council_results:
+        all_council_badges.extend(r.badges)
+    if all_council_badges:
+        top_eval["badges"] = list(set(top_eval.get("badges", []) + all_council_badges))
 
     highlight_ids = [c[0]["id"] for c in top_candidates]
     ui_actions = [
@@ -118,18 +150,23 @@ async def deep_research_node(state: ShopAgentState) -> Dict[str, Any]:
                 "top_product": top_eval,
                 "runner_up": runner_eval,
                 "all_evals": [c[1] for c in top_candidates],
+                "subagent_council": [r.model_dump() for r in council_results],
             },
         ),
         UIAction(
             action="AVATAR_GLIDE",
-            payload={"target_id": top_p["id"], "emotion": "HYPED", "message": "This is your 98% hero match, Sir!"},
+            payload={"target_id": top_p["id"], "emotion": "HYPED", "message": "Certified by our AI Specialist Council, Sir!"},
         ),
     ]
 
     return {
-        "final_response": final_text,
+        "final_response": synthesized_pitch,
         "emotion": "HYPED",
         "focus_target_id": top_p["id"],
         "ui_actions": ui_actions,
         "retrieved_products": [c[0] for c in top_candidates],
+        "metadata": {
+            "subagent_council_count": len(council_results),
+            "council_avg_confidence": sum(r.confidence_score for r in council_results) // len(council_results),
+        },
     }
